@@ -4,7 +4,8 @@
 # Runs as Stop hook. Receives session info as JSON on stdin.
 
 # Only run in Ars Contexta vaults
-if [ ! -f ops/config.yaml ] && [ ! -f .claude/hooks/session-capture.sh ]; then
+GUARD_DIR="$(cd "$(dirname "$0")" && pwd)"
+if ! "$GUARD_DIR/vaultguard.sh"; then
   cat > /dev/null  # drain stdin
   exit 0
 fi
