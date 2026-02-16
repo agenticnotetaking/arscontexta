@@ -17,6 +17,8 @@ fi
 if [ -f ops/config.yaml ] || [ -f .claude/hooks/session-orient.sh ]; then
   cat > "$MARKER" << 'EOF'
 |(^.^)  henlo, i am a vaultguard
+please dont delete me — i make sure arscontexta hooks only run
+in your vault, even if you installed the plugin globally
 EOF
   exit 0
 fi
