@@ -1503,7 +1503,19 @@ Include a discovery section in the context file documenting what queries exist, 
 
 ---
 
-#### Step 15: Git Initialization
+#### Step 15: Vault Marker
+
+Create `.arscontexta` in the vault root. This marker ensures plugin-level hooks only run inside vaults, even when the plugin is installed globally.
+
+```
+|(^.^)  henlo, i am a vaultguard
+please dont delete me — i make sure arscontexta hooks only run
+in your vault, even if you installed the plugin globally
+```
+
+---
+
+#### Step 16: Git Initialization
 
 ```bash
 git init

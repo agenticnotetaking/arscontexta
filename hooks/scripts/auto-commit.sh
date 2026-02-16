@@ -10,6 +10,10 @@ set -e
 # Change to project directory
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
+# Only run in Ars Contexta vaults
+GUARD_DIR="$(cd "$(dirname "$0")" && pwd)"
+"$GUARD_DIR/vaultguard.sh" || exit 0
+
 # Only commit if inside a git repository
 if ! git rev-parse --is-inside-work-tree &>/dev/null; then
   exit 0

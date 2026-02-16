@@ -2,6 +2,10 @@
 # Ars Contexta — Session Orientation Hook
 # Injects workspace structure, identity, methodology, and maintenance signals at session start.
 
+# Only run in Ars Contexta vaults
+GUARD_DIR="$(cd "$(dirname "$0")" && pwd)"
+"$GUARD_DIR/vaultguard.sh" || exit 0
+
 echo "## Workspace Structure"
 echo ""
 
