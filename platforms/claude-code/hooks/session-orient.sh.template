@@ -1,0 +1,189 @@
+#!/bin/bash
+# Ars Contexta — Session Orientation Hook (Claude Code)
+# Event: SessionStart
+# Purpose: Inject workspace structure, identity, methodology, and maintenance
+#          signals at session start so the agent always knows what exists,
+#          what it was working on, and where to pick up.
+#
+# This is a TEMPLATE. During /init, {{VARIABLE}} markers are replaced
+# with values from the derivation manifest. The generator also conditionally
+# includes sections based on enabled features.
+
+# ─────────────────────────────────────────────
+# 1. Persistent Working Memory (goals)
+# ─────────────────────────────────────────────
+# Goals orient the agent to what matters before anything else.
+# Check both self/ and ops/ locations for the goals file.
+
+if [ -f self/goals.md ]; then
+  echo "## Current Goals"
+  echo ""
+  cat self/goals.md
+  echo ""
+elif [ -f ops/goals.md ]; then
+  echo "## Current Goals"
+  echo ""
+  cat ops/goals.md
+  echo ""
+fi
+
+# ─────────────────────────────────────────────
+# 2. Learned Behavioral Patterns (methodology)
+# ─────────────────────────────────────────────
+# Load the 5 most recent methodology notes (titles only).
+# These are behavioral learnings from /remember that the
+# agent should be aware of without reading full content.
+
+METH_FILES=$(ls -t ops/methodology/*.md 2>/dev/null | head -5)
+if [ -n "$METH_FILES" ]; then
+  echo "## Recent Methodology Learnings"
+  echo ""
+  for f in $METH_FILES; do
+    # Extract title from first heading
+    TITLE=$(grep '^# ' "$f" 2>/dev/null | head -1 | sed 's/^# //')
+    if [ -n "$TITLE" ]; then
+      echo "- $TITLE"
+    fi
+  done
+  echo ""
+fi
+
+# ─────────────────────────────────────────────
+# 3. Previous Session State (continuity)
+# ─────────────────────────────────────────────
+# If a previous session's state was captured, load it
+# so the agent can resume where it left off.
+
+if [ -f ops/sessions/current.json ]; then
+  echo "## Previous Session Context"
+  echo ""
+  cat ops/sessions/current.json
+  echo ""
+fi
+
+# ─────────────────────────────────────────────
+# 4. Workspace Tree (structural orientation)
+# ─────────────────────────────────────────────
+# Show the workspace structure up to 3 levels deep.
+# This gives the agent a map of all files without reading any.
+
+echo "## Workspace Structure"
+echo ""
+
+if command -v tree &> /dev/null; then
+  tree -L 3 --charset ascii -I '.git|node_modules|.claude' -P '*.md|*.yaml|*.json' . 2>/dev/null
+else
+  # Fallback: find-based tree listing
+  find . -name "*.md" -not -path "./.git/*" -not -path "*/node_modules/*" \
+    -not -path "./ops/sessions/*" -maxdepth 3 2>/dev/null | sort | \
+    while read -r file; do
+      depth=$(echo "$file" | tr -cd '/' | wc -c)
+      indent=$(printf '%*s' "$((depth * 2))" '')
+      basename=$(basename "$file")
+      echo "${indent}${basename}"
+    done
+fi
+
+echo ""
+
+# ─────────────────────────────────────────────
+# 5. Identity (self space — conditional)
+# ─────────────────────────────────────────────
+# {{IF_SELF_SPACE}}
+# If self/ space is enabled, load identity and methodology
+# so the agent remembers who it is across sessions.
+
+if [ -f self/identity.md ]; then
+  echo "## Identity"
+  echo ""
+  cat self/identity.md
+  echo ""
+fi
+
+if [ -f self/methodology.md ]; then
+  cat self/methodology.md
+  echo ""
+fi
+# {{END_IF_SELF_SPACE}}
+
+# ─────────────────────────────────────────────
+# 6. Condition-Based Maintenance Signals
+# ─────────────────────────────────────────────
+# Check vault state against thresholds. These are not
+# time-based triggers but measurements of actual state.
+# Fires only when a condition is violated.
+
+SIGNALS=""
+
+# Observation accumulation threshold (default: 10)
+OBS_COUNT=$(grep -rl '^status: pending' ops/observations/ 2>/dev/null | wc -l | tr -d ' ')
+if [ "$OBS_COUNT" -ge {{OBS_THRESHOLD:-10}} ]; then
+  SIGNALS="${SIGNALS}CONDITION: ${OBS_COUNT} pending observations. Consider /{DOMAIN:rethink}.\n"
+fi
+
+# Tension accumulation threshold (default: 5)
+TENS_COUNT=$(grep -rl '^status: pending\|^status: open' ops/tensions/ 2>/dev/null | wc -l | tr -d ' ')
+if [ "$TENS_COUNT" -ge {{TENSION_THRESHOLD:-5}} ]; then
+  SIGNALS="${SIGNALS}CONDITION: ${TENS_COUNT} unresolved tensions. Consider /{DOMAIN:rethink}.\n"
+fi
+
+# Unprocessed sessions threshold (default: 5)
+SESS_COUNT=$(find ops/sessions/ -name "*.json" -not -name "current.json" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$SESS_COUNT" -ge 5 ]; then
+  SIGNALS="${SIGNALS}CONDITION: ${SESS_COUNT} unprocessed sessions. Consider /remember --mine-sessions.\n"
+fi
+
+# Inbox pressure (default: 3 items)
+INBOX_COUNT=$(find {{INBOX_DIR:-inbox}}/ -name "*.md" -maxdepth 2 2>/dev/null | wc -l | tr -d ' ')
+if [ "$INBOX_COUNT" -ge 3 ]; then
+  SIGNALS="${SIGNALS}CONDITION: ${INBOX_COUNT} items in {{INBOX_DIR:-inbox}}/. Consider /{DOMAIN:reduce} or /pipeline.\n"
+fi
+
+# Orphan notes (any is a signal)
+NOTES_DIR="{{NOTES_DIR:-notes}}"
+ORPHAN_COUNT=0
+if [ -d "$NOTES_DIR" ]; then
+  for f in "$NOTES_DIR"/*.md; do
+    [ -f "$f" ] || continue
+    title=$(basename "$f" .md)
+    hits=$(grep -rl "\[\[$title\]\]" "$NOTES_DIR"/ 2>/dev/null | wc -l | tr -d ' ')
+    [ "$hits" -eq 0 ] && ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
+  done
+  if [ "$ORPHAN_COUNT" -gt 0 ]; then
+    SIGNALS="${SIGNALS}CONDITION: ${ORPHAN_COUNT} orphan notes (no incoming links). Consider /{DOMAIN:reflect}.\n"
+  fi
+fi
+
+# Tutorial resume check
+if [ -f ops/tutorial-state.yaml ]; then
+  STEP=$(grep '^current_step:' ops/tutorial-state.yaml 2>/dev/null | awk '{print $2}')
+  if [ -n "$STEP" ] && [ "$STEP" -le 5 ] 2>/dev/null; then
+    SIGNALS="${SIGNALS}NOTE: Unfinished tutorial (step ${STEP} of 5). Resume with /tutorial.\n"
+  fi
+fi
+
+if [ -n "$SIGNALS" ]; then
+  echo "## Maintenance Signals"
+  echo ""
+  printf "$SIGNALS"
+  echo ""
+fi
+
+# ─────────────────────────────────────────────
+# 7. Queue Summary (pipeline + maintenance)
+# ─────────────────────────────────────────────
+# Show pending task counts from the unified queue.
+# Full reconciliation happens in /next, not here.
+# The hook's job is context injection, not queue management.
+
+if [ -f ops/queue/queue.json ]; then
+  PIPELINE_PENDING=$(jq '[.tasks[] | select(.type != "maintenance" and .status == "pending")] | length' ops/queue/queue.json 2>/dev/null || echo "0")
+  MAINT_PENDING=$(jq '[.tasks[] | select(.type == "maintenance" and .status == "pending")] | length' ops/queue/queue.json 2>/dev/null || echo "0")
+  if [ "$PIPELINE_PENDING" -gt 0 ] || [ "$MAINT_PENDING" -gt 0 ]; then
+    echo "## Queue"
+    echo ""
+    echo "  Pipeline: ${PIPELINE_PENDING} pending | Maintenance: ${MAINT_PENDING} pending"
+    echo "  Run /next for recommendations."
+    echo ""
+  fi
+fi

@@ -1,0 +1,38 @@
+name: experimental
+display_name: "Experimental / Build Your Own"
+description: "In-depth onboarding with thinking notes surfaced for every design decision. The user co-designs the system."
+dimensions:
+  atomicity: null  # user-chosen
+  organization: null
+  linking: null
+  processing: null
+  session: null
+  maintenance: null
+  search: null
+  automation: null
+blocks:
+  always:
+    - wiki-links
+    - processing-pipeline
+    - schema
+    - maintenance
+    - self-evolution
+    - session-rhythm
+    - templates
+    - ethical-guardrails
+    - helper-functions
+    - graph-analysis
+  conditional:
+    - atomic-notes
+    - mocs
+    - semantic-search
+    - personality
+    - self-space
+    - multi-domain
+  optional: []
+  disabled: []
+self_space: "user_choice"
+qmd: "user_choice"
+personality: "derived_from_conversation"
+processing_depth: "full quality gates by default, user can opt down"
+starter_mocs: []  # user-chosen

@@ -1,0 +1,18 @@
+{
+  "name": "knowledge-recommend",
+  "description": "Get research-backed architecture advice for your knowledge system. Describe your use case, constraints, and goals to get specific recommendations grounded in TFT research with rationale.",
+  "version": "0.4.0",
+  "author": "arscontexta",
+  "tags": [
+    "knowledge-management",
+    "research",
+    "learning"
+  ],
+  "entry": "SKILL.md",
+  "platform_hints": {
+    "claude-code": {
+      "context": "fork",
+      "model": "opus"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+vocabulary:
+  note: reflection
+  reduce: surface
+  reflect: find patterns
+  verify: check resonance
+  reweave: revisit
+  moc: life area
+  description_field: reflection summary
+  topics_footer: life areas
+  inbox: journal
+  pipeline: reflection cycle
+  wiki_link: connection
+  thinking_notes: reflections
+  archive: past reflections
+  self_space: personal identity
+  orient: check in
+  persist: save reflections
+
+folders:
+  notes: reflections
+  inbox: journal
+  archive: past
+
+templates:
+  base_note: reflection-note.md
+  moc: life-area.md
+
+skills:
+  reduce: /surface
+  reflect: /find-patterns
+  verify: /check-resonance
+  reweave: /revisit

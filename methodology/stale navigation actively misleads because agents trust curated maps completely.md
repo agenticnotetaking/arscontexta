@@ -1,0 +1,43 @@
+---
+description: A stale MOC is worse than no MOC because agents fall back to search (current content) without one, but trust an outdated map without verifying it — and they have no mechanism to suspect staleness
+kind: research
+topics: ["[[maintenance-patterns]]", "[[agent-cognition]]"]
+methodology: ["Original"]
+source: [[2026-02-08-moc-architecture-hierarchy-blueprint]]
+---
+
+# stale navigation actively misleads because agents trust curated maps completely
+
+A missing map and a wrong map produce fundamentally different failures. When no MOC exists for a topic, agents experience [[navigational vertigo emerges in pure association systems without local hierarchy]] — disorientation, but with a natural fallback. The agent searches, follows links, queries semantically. These mechanisms access current content because they operate on the live graph. The absence of curation is uncomfortable but not deceptive.
+
+A stale MOC is deceptive. It presents an outdated view of the topic as though it were current, and the agent has no mechanism to suspect otherwise. Humans retain some cross-session memory that might trigger doubt — "I remember writing something about this last week, but the MOC doesn't mention it." Agents have zero such intuition. Each session loads the MOC, treats its contents as the authoritative map of the territory, and navigates accordingly. Notes that were created after the MOC was last updated are invisible not because they are hard to find, but because the agent never looks for them. The curated map satisfies the navigation need, so no further search occurs.
+
+This is why since [[metacognitive confidence can diverge from retrieval capability]], the staleness problem is specifically dangerous for agents. The confidence-capability gap widens silently: the MOC looks complete, passes structural checks, has context phrases and proper formatting. Nothing about the MOC itself signals that it is missing recent content. The divergence between what the map shows and what the territory contains grows with every note added to the topic that does not trigger a MOC update.
+
+The asymmetry cuts deeper than "outdated information." Because [[MOCs are attention management devices not just organizational tools]], a stale MOC does not merely misinform — it misallocates the agent's finite context budget. The agent loads the MOC trusting it to front-load orientation, spends tokens absorbing yesterday's synthesis, and then reasons within a frame that excludes recent work. A stale MOC actively shapes which notes get loaded into context, which connections get considered, and which synthesis opportunities surface. Since [[wiki links create navigation paths that shape retrieval]], the links within a stale MOC create retrieval paths through yesterday's topology while today's topology has moved on. The agent reasons with incomplete context and produces conclusions that miss recent work — and nothing in the output reveals the gap. The conclusions look well-reasoned because the context that was loaded was internally consistent. It was just incomplete.
+
+The remedy has two layers. First, since [[backward maintenance asks what would be different if written today]], applying that reconsideration mental model to MOCs catches drift before it compounds — the question "if I wrote this MOC today, what would be different?" is precisely the backward maintenance question scoped to navigation. Second, algorithmic detection: since [[community detection algorithms can inform when MOCs should split or merge]], tracking when actual graph communities diverge from MOC boundaries provides empirical signals that a map has gone stale. These two layers map onto judgment and automation respectively. The backward pass requires semantic understanding of whether the MOC still represents the topic accurately. The algorithmic pass requires only structural comparison — since [[reconciliation loops that compare desired state to actual state enable drift correction without continuous monitoring]], the reconciliation pattern can detect MOC coverage gaps mechanically (are all notes in the topic linked from the MOC?) without needing to evaluate whether the MOC's synthesis still holds. Both layers matter because the problem is self-concealing — you cannot rely on the agent to notice what it cannot see.
+
+The risk compounds with scale. Since [[navigation infrastructure passes through distinct scaling regimes that require qualitative strategy shifts]], at larger scales MOC territories grow larger and take longer to audit. A stale MOC covering 15 notes might miss one recent addition — inconvenient but recoverable. A stale MOC covering 45 notes might miss an entire sub-cluster that emerged since the last update — a structural blind spot that shapes all reasoning within the topic. And because [[MOC construction forces synthesis that automated generation from metadata cannot replicate]], the synthesis invested in constructing a MOC is wasted when the MOC goes stale. The Dump-Lump-Jump process produced genuine insight, but that insight reflected last month's graph. Today's graph has moved on, and the synthesis no longer captures what matters.
+
+The generalizable principle extends beyond this vault: any curated navigation layer in an agent system carries this vulnerability. Curated indices, recommended reading lists, onboarding guides — anything an agent trusts as authoritative without independent verification becomes a liability when it falls behind the content it maps. The stronger the agent's trust in the curation, the worse the failure when the curation is stale.
+
+---
+---
+
+Relevant Notes:
+- [[navigational vertigo emerges in pure association systems without local hierarchy]] — the complementary failure mode: vertigo is the absence of navigation, this note is about the presence of WRONG navigation; together they bracket the space of navigation failure
+- [[metacognitive confidence can diverge from retrieval capability]] — the general pattern this instantiates: stale MOCs produce exactly the organizational false confidence where structure appears sound while actual retrieval fails
+- [[community detection algorithms can inform when MOCs should split or merge]] — the detection mechanism: algorithmic drift detection can catch stale boundaries before agents are misled, making the staleness problem empirically tractable
+- [[wiki links create navigation paths that shape retrieval]] — the mechanism that makes staleness dangerous: if links shape retrieval, then stale links shape retrieval toward outdated topology
+- [[backward maintenance asks what would be different if written today]] — the remedy: the reconsideration mental model applied to MOCs catches drift before it compounds by asking whether the map still matches the territory
+- [[reconciliation loops that compare desired state to actual state enable drift correction without continuous monitoring]] — enables detection: the reconciliation pattern formalizes MOC staleness detection by declaring desired state (all notes in MOCs) and measuring divergence periodically
+- [[MOCs are attention management devices not just organizational tools]] — deepens the stakes: stale MOCs don't just misinform navigation but misallocate the context budget by loading outdated orientation that wastes tokens on reconstruction of yesterday's understanding
+- [[navigation infrastructure passes through distinct scaling regimes that require qualitative strategy shifts]] — extends: staleness risk compounds with scale because larger topic territories take longer to audit and drift goes undetected longer
+- [[MOC construction forces synthesis that automated generation from metadata cannot replicate]] — sibling: if constructing MOCs requires genuine synthesis, stale MOCs waste that synthesis investment and guide reasoning based on yesterday's synthesis rather than today's understanding
+- [[context phrase clarity determines how deep a navigation hierarchy can scale]] — sibling: stale context phrases are doubly deceptive because the clarity that originally enabled confident branch commitment now enables confident WRONG commitment — the phrase is still convincing even when the relationship it describes no longer reflects the current graph
+- [[complete navigation requires four complementary types that no single mechanism provides]] — sibling: the four-type framework gives vocabulary for where staleness strikes: global navigation changes rarely so staleness is infrequent, but local and contextual navigation change with every batch and every note, making those types the primary staleness vectors
+
+Topics:
+- [[maintenance-patterns]]
+- [[agent-cognition]]

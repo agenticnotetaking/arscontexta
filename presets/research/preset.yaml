@@ -1,0 +1,41 @@
+name: research
+display_name: "Knowledge Research"
+description: "Full automation from day one, all pipeline skills at full depth, all blocks active. The reference implementation."
+dimensions:
+  atomicity: 0.8
+  organization: 0.3
+  linking: 0.7
+  processing: 0.8
+  session: 0.7
+  maintenance: 0.6
+  search: 0.8
+  automation: 0.8
+blocks:
+  always:
+    - atomic-notes
+    - wiki-links
+    - mocs
+    - processing-pipeline
+    - schema
+    - maintenance
+    - self-evolution
+    - session-rhythm
+    - templates
+    - ethical-guardrails
+    - helper-functions
+    - graph-analysis
+  conditional:
+    - semantic-search  # if qmd opted in
+    - multi-domain     # if needed
+  optional:
+    - personality
+  disabled:
+    - self-space  # OFF for research (goals route to ops/)
+self_space: false
+qmd: true  # opted in during onboarding
+personality: "neutral-analytical"
+processing_depth: "full quality gates from day one"
+starter_mocs:
+  - "{DOMAIN:domain}-overview"
+  - "methods"
+  - "open-questions"

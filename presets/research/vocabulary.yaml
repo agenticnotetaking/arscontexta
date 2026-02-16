@@ -1,0 +1,33 @@
+# Universal → Research domain vocabulary mapping
+vocabulary:
+  note: claim
+  reduce: reduce
+  reflect: reflect
+  verify: verify
+  reweave: reweave
+  moc: topic map
+  description_field: claim context
+  topics_footer: research areas
+  inbox: inbox
+  pipeline: pipeline
+  wiki_link: connection
+  thinking_notes: claims
+  archive: processed sources
+  self_space: research identity
+  orient: orient
+  persist: persist
+
+folders:
+  notes: notes
+  inbox: inbox
+  archive: archive
+
+templates:
+  base_note: thinking-note.md
+  moc: topic-map.md
+
+skills:
+  reduce: /reduce
+  reflect: /reflect
+  verify: /verify
+  reweave: /reweave

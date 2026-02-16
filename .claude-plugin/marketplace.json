@@ -1,0 +1,37 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agenticnotetaking",
+  "owner": {
+    "name": "Heinrich",
+    "email": "arscontexta@proton.me"
+  },
+  "metadata": {
+    "description": "Conversational derivation engine for agent-native knowledge systems",
+    "version": "0.8.0"
+  },
+  "plugins": [
+    {
+      "name": "arscontexta",
+      "description": "Generate research-backed knowledge systems from natural conversation. 15 kernel primitives, 26 commands, 249 research claims, 3 presets.",
+      "version": "0.8.0",
+      "source": "./",
+      "strict": false,
+      "author": {
+        "name": "Heinrich",
+        "email": "arscontexta@proton.me"
+      },
+      "homepage": "https://github.com/agenticnotetaking/arscontexta",
+      "repository": "https://github.com/agenticnotetaking/arscontexta",
+      "license": "MIT",
+      "keywords": [
+        "knowledge-management",
+        "tools-for-thought",
+        "agent-memory",
+        "derivation-engine",
+        "zettelkasten",
+        "cognitive-architecture"
+      ],
+      "category": "productivity"
+    }
+  ]
+}

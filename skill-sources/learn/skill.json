@@ -1,0 +1,18 @@
+{
+  "name": "knowledge-learn",
+  "description": "Research a topic and grow your knowledge graph. Uses Exa deep researcher, web search, or basic search to investigate topics, files results with full provenance, and chains to processing pipeline.",
+  "version": "0.4.0",
+  "author": "arscontexta",
+  "tags": [
+    "knowledge-management",
+    "research",
+    "learning"
+  ],
+  "entry": "SKILL.md",
+  "platform_hints": {
+    "claude-code": {
+      "context": "fork",
+      "model": "opus"
+    }
+  }
+}

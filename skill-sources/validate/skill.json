@@ -1,0 +1,18 @@
+{
+  "name": "knowledge-validate",
+  "description": "Schema validation for notes. Checks against domain-specific templates. Validates required fields, enum values, description quality, and link health. Non-blocking -- warns but doesn't prevent capture.",
+  "version": "0.4.0",
+  "author": "arscontexta",
+  "tags": [
+    "knowledge-management",
+    "processing",
+    "pipeline"
+  ],
+  "entry": "SKILL.md",
+  "platform_hints": {
+    "claude-code": {
+      "context": "fork",
+      "model": "sonnet"
+    }
+  }
+}

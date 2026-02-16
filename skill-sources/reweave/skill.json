@@ -1,0 +1,18 @@
+{
+  "name": "knowledge-reweave",
+  "description": "Update old notes with new connections. The backward pass that /reflect doesn't do. Revisit existing notes that predate newer related content, add connections, sharpen claims, consider splits.",
+  "version": "0.4.0",
+  "author": "arscontexta",
+  "tags": [
+    "knowledge-management",
+    "processing",
+    "pipeline"
+  ],
+  "entry": "SKILL.md",
+  "platform_hints": {
+    "claude-code": {
+      "context": "fork",
+      "model": "opus"
+    }
+  }
+}

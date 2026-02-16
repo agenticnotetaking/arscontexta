@@ -1,0 +1,64 @@
+---
+description: When notes have queryable metadata, the vault can shift from passive storage to active participant — notes surfacing themselves based on due dates, staleness thresholds, or status transitions
+kind: research
+topics: ["[[maintenance-patterns]]"]
+methodology: ["Original"]
+source: [[2-4-metadata-properties]]
+---
+
+# programmable notes could enable property-triggered workflows
+
+The standard model treats notes as passive objects. You write them, file them, maybe search for them later. The note sits until you retrieve it. But when notes have structured metadata, a different architecture becomes possible: notes that act based on their properties. A note with `status: seedling` and `created: 30 days ago` surfaces itself for review. A note with `due: today` appears in the morning's task list. A note whose `last-reviewed` date exceeds some threshold enters a maintenance queue.
+
+This is the shift from repository to agent that the source material describes: "systems where notes can trigger actions based on their properties" transform "the PKM system from a passive repository into an active agent in the user's cognitive workflow."
+
+The vault already implements primitive versions of this pattern. Since [[live index via periodic regeneration keeps discovery current]], hooks that fire on note changes demonstrate property-triggered behavior — the note's modification triggers index regeneration. Since [[schema enforcement via validation agents enables soft consistency]], validation hooks that fire on Write demonstrate notes triggering quality checks. But these are system-level triggers (file events), not semantic triggers (property changes).
+
+The fuller vision involves semantic triggers:
+
+| Property Condition | Triggered Action |
+|-------------------|------------------|
+| `status: seedling` AND age > 14 days | Add to review queue |
+| `last-reviewed` older than interval | Surface for spaced repetition |
+| `type: tension` AND `status: open` | Include in synthesis prompts |
+| Incoming link count < 2 AND age > 30 days | Flag as potential orphan |
+| `source` note modified after this note created | Trigger reweave check |
+
+Since [[type field enables structured queries without folder hierarchies]], the `type:` field already provides one property dimension for triggers — tension notes wanting synthesis, methodology notes wanting implementation review. The table above extends this to compound conditions (type AND status, property AND age).
+
+The implementation challenge is the event model. File-based hooks fire on Write/Read events — they don't know about property semantics. Since [[maintenance scheduling frequency should match consequence speed not detection capability]], the choice between event-driven and periodic detection is not about cost but about how fast the problem develops — schema violations need per-event triggers because they propagate instantly, while staleness conditions need periodic scans because they develop over weeks. And since [[three concurrent maintenance loops operate at different timescales to catch different classes of problems]], each property trigger in the table above maps naturally onto a specific loop: schema-violation triggers belong in the fast loop (per-event hooks), orphan detection and staleness surfacing belong in the medium loop (per-session checks), and source-change reweave triggers belong in the slow loop (periodic review). The three-loop architecture provides the scheduling container that determines which trigger gets which infrastructure investment. A property-aware trigger system would need either:
+
+1. **Property diff on every write** — compare YAML before/after, fire triggers when specific fields change. Since [[metadata reduces entropy enabling precision over recall]], YAML frontmatter is already structured for parsing; diffing it is tractable. And since [[intermediate representation pattern enables reliable vault operations beyond regex]], an IR layer where notes are already parsed into typed objects would make property diffs a comparison of structured dictionaries rather than regex extraction that breaks on multiline values or edge-case YAML formatting.
+
+2. **Periodic property scans** — a maintenance agent queries properties vault-wide and surfaces notes meeting conditions. This is less reactive but simpler. It is essentially what `/review` does for link validity, extended to arbitrary property queries. Since [[reconciliation loops that compare desired state to actual state enable drift correction without continuous monitoring]], periodic property scans are reconciliation loops where each property condition in the table above defines a desired state and the scan detects divergence. The reconciliation pattern explains why periodic scans may be the pragmatic first step: reconciliation's core insight is that the comparison is always safe and idempotent, meaning scheduled property scans carry zero risk and catch the accumulated drift that event-driven triggers miss.
+
+3. **Hybrid approach** — file events trigger property parsing; property changes enqueue notes for condition evaluation; a scheduler processes the queue.
+
+The connection to spaced repetition is direct. Since [[spaced repetition scheduling could optimize vault maintenance]] proposes interval-based attention allocation, programmable notes are the implementation mechanism. The note's `last-reviewed` property determines its next review date; a scheduler queries notes due for review and surfaces them. The note participates in determining when it gets attention. Similarly, since [[maturity field enables agent context prioritization]] proposes seedling/developing/evergreen status, that status becomes a trigger dimension: seedlings surface more frequently for development, evergreens surface rarely for confirmation.
+
+There's a deeper principle here about the nature of notes in agent-operated systems. Traditional notes are inert — the agent acts on them. Programmable notes are reactive — they influence when and how the agent acts. This shifts the architecture from pull (agent searches for relevant content) to push (content declares its relevance). The shift is especially important because since [[prospective memory requires externalization]], every "remember to check this note later" intention is a guaranteed failure across agent sessions. Property-triggered workflows eliminate the prospective memory demand entirely — the note surfaces itself when conditions are met, rather than depending on any agent to remember that attention is due. Since [[dangling links reveal which notes want to exist]], the vault already has notes that "want" things — this pattern extends that: notes that want attention, want review, want connection. This connects to [[bootstrapping principle enables self-improving systems]]: property-triggered workflows let the vault participate in its own maintenance by declaring what needs attention. The system improves itself through the notes it contains.
+
+The risk is complexity. Every property trigger is a rule; rules interact; interactions create surprises. A note might trigger multiple workflows simultaneously. Cascades might emerge where one note's action triggers another's. Since [[complex systems evolve from simple working systems]], the safe approach starts minimal: one or two trigger types (staleness, due date), implemented as periodic queries rather than event-driven hooks, extended only when the simple version proves valuable.
+
+The question worth investigating: what property triggers would actually improve vault operation vs adding complexity without benefit? Staleness-based surfacing seems high-value (prevents write-only memory). Due-date surfacing seems high-value (explicit scheduling). Status-transition triggers seem medium-value (could automate parts of the processing pipeline). Arbitrary programmability seems low-value (complexity exceeds benefit for most workflows). The consequence speed framework helps here: triggers earn their complexity when the problem they detect propagates faster than the next scheduled check would catch it. A schema violation that propagates instantly justifies per-event complexity. A staleness condition that develops over weeks does not need event-driven infrastructure — a periodic scan suffices. The research direction is identifying which triggers earn their complexity, and consequence speed provides the evaluation criterion. And since [[confidence thresholds gate automated action between the mechanical and judgment zones]], the response to each trigger need not be binary (fire or do not fire) -- a three-tier response pattern where high-confidence triggers auto-execute, medium-confidence triggers suggest, and low-confidence triggers merely log provides a graduated approach that reduces the risk of cascade interactions while still capturing the value of property-triggered surfacing.
+---
+
+Relevant Notes:
+- [[live index via periodic regeneration keeps discovery current]] — primitive form: file events already trigger index updates; property triggers extend this to semantic events
+- [[schema enforcement via validation agents enables soft consistency]] — sibling pattern: validation hooks fire on writes; property triggers fire on semantic conditions
+- [[spaced repetition scheduling could optimize vault maintenance]] — direct application: property-triggered surfacing is how spaced repetition would be implemented
+- [[metadata reduces entropy enabling precision over recall]] — prerequisite: property triggers require queryable metadata; this note explains why that metadata exists
+- [[dangling links reveal which notes want to exist]] — the notes that want framing: dangling links want resolution; this extends to notes wanting attention, review, connection
+- [[complex systems evolve from simple working systems]] — constraint: start with minimal triggers, extend when value is proven
+- [[bootstrapping principle enables self-improving systems]] — the deeper architecture: property triggers let notes participate in vault maintenance, making the system self-improving through its own content
+- [[maturity field enables agent context prioritization]] — trigger dimension: seedling/developing/evergreen status determines review frequency and surfacing priority
+- [[type field enables structured queries without folder hierarchies]] — existing trigger dimension: `type:` field enables category-based triggers (tensions for synthesis, methodology for implementation review)
+- [[intermediate representation pattern enables reliable vault operations beyond regex]] — infrastructure prerequisite: property diff on writes and compound condition checking both depend on reliable YAML extraction; an IR layer makes property access typed lookups rather than regex parsing that breaks on multiline values
+- [[reconciliation loops that compare desired state to actual state enable drift correction without continuous monitoring]] — complementary architecture: periodic property scans are reconciliation loops where each condition defines a desired state; reconciliation catches the accumulated drift that event-driven property triggers miss
+- [[confidence thresholds gate automated action between the mechanical and judgment zones]] -- response calibration for triggered actions: property triggers range from safe read-only operations (adding to review queue) to risky write operations (auto-modifying content), and confidence scoring determines which response tier the trigger activates; a staleness detection with high certainty can auto-queue while a reweave check with medium certainty should only suggest, applying the three-tier pattern to property-triggered workflow design
+- [[maintenance scheduling frequency should match consequence speed not detection capability]] — scheduling framework for trigger frequency: consequence speed provides the principled answer to whether a property condition needs event-driven detection or periodic scanning — schema violations propagate instantly (per-event trigger), staleness develops over weeks (periodic scan), and the five-tier spectrum maps each property condition to its appropriate detection cadence
+- [[three concurrent maintenance loops operate at different timescales to catch different classes of problems]] — scheduling container for property triggers: each trigger maps onto a specific loop (fast for schema, medium for orphan/staleness, slow for reweave), and the three-loop architecture determines which triggers earn event-driven infrastructure versus periodic scanning
+- [[prospective memory requires externalization]] — the cognitive problem property triggers solve: agents cannot remember to check conditions across sessions, so notes that surface themselves when conditions are met eliminate the prospective memory demand entirely
+
+Topics:
+- [[maintenance-patterns]]

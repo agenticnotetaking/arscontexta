@@ -1,0 +1,18 @@
+{
+  "name": "knowledge-remember",
+  "description": "Capture friction as methodology notes. Three modes -- explicit description, contextual (review recent corrections), session mining (scan transcripts for patterns).",
+  "version": "0.4.0",
+  "author": "arscontexta",
+  "tags": [
+    "knowledge-management",
+    "meta-cognitive",
+    "capture"
+  ],
+  "entry": "SKILL.md",
+  "platform_hints": {
+    "claude-code": {
+      "context": "fork",
+      "model": "opus"
+    }
+  }
+}

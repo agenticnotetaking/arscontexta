@@ -1,0 +1,18 @@
+{
+  "name": "knowledge-verify",
+  "description": "Combined verification -- recite (description quality) + validate (schema compliance) + review (health checks). Quality gate after creating notes or as periodic maintenance.",
+  "version": "0.4.0",
+  "author": "arscontexta",
+  "tags": [
+    "knowledge-management",
+    "processing",
+    "pipeline"
+  ],
+  "entry": "SKILL.md",
+  "platform_hints": {
+    "claude-code": {
+      "context": "fork",
+      "model": "opus"
+    }
+  }
+}

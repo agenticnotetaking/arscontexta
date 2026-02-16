@@ -1,0 +1,41 @@
+name: personal-assistant
+display_name: "Personal Assistant"
+description: "All skills available and active from day one, adapted for personal use. Full pipeline with personal extraction categories."
+dimensions:
+  atomicity: 0.5
+  organization: 0.5
+  linking: 0.3
+  processing: 0.7
+  session: 0.3
+  maintenance: 0.4
+  search: 0.3
+  automation: 0.6
+blocks:
+  always:
+    - atomic-notes
+    - wiki-links
+    - mocs
+    - processing-pipeline
+    - schema
+    - maintenance
+    - self-evolution
+    - session-rhythm
+    - templates
+    - ethical-guardrails
+    - helper-functions
+    - graph-analysis
+    - personality
+    - self-space
+  conditional:
+    - semantic-search  # if qmd opted in
+    - multi-domain     # if needed
+  optional: []
+  disabled: []
+self_space: true
+qmd: "user_choice"  # choice during onboarding
+personality: "warm-supportive"
+processing_depth: "full quality gates"
+starter_mocs:
+  - "life-areas"
+  - "people"
+  - "goals"
