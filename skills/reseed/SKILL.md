@@ -3,7 +3,7 @@ name: reseed
 description: Re-derive your knowledge system from first principles when structural drift accumulates. Analyzes dimension incoherence, vocabulary mismatch, boundary dissolution, and template divergence. Preserves all content while restructuring architecture.
 context: fork
 model: opus
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vsearch, mcp__qmd__query, mcp__qmd__get, AskUserQuestion
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vector_search, mcp__qmd__deep_search, mcp__qmd__get, mcp__qmd__multi_get, AskUserQuestion
 argument-hint: "[optional: --analysis-only to see drift report without implementing]"
 ---
 
@@ -159,7 +159,7 @@ For each dimension:
 
 1. **Read original rationale** from ops/derivation.md -- why was this position chosen?
 2. **Consider friction patterns** from Phase 1d -- what operational pain exists?
-3. **Query the research graph** -- use `mcp__qmd__query` to search for claims relevant to the friction. Fall back to `mcp__qmd__vsearch`, then to reading bundled reference files directly if MCP is unavailable.
+3. **Query the research graph** -- use `mcp__qmd__deep_search` to search for claims relevant to the friction. Fall back to `mcp__qmd__vector_search`. If MCP is unavailable, use qmd CLI (`qmd query`, then `qmd vsearch`). Fall back to reading bundled reference files directly only if both MCP and qmd CLI are unavailable.
 4. **Read dimension-claim-map.md** for the specific claims that inform this dimension.
 5. **Propose new position or confirm original** -- with explicit reasoning.
 

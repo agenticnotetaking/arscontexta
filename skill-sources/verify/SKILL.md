@@ -2,7 +2,7 @@
 name: verify
 description: Combined verification — recite (description quality via cold-read prediction) + validate (schema compliance) + review (health checks). Use as a quality gate after creating notes or as periodic maintenance. Triggers on "/verify", "/verify [note]", "verify note quality", "check note health".
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, mcp__qmd__vsearch
+allowed-tools: Read, Write, Edit, Grep, Glob, mcp__qmd__vector_search
 context: fork
 model: opus
 ---
@@ -73,9 +73,10 @@ ALL FOUR must pass.
 
 Before any retrieval tests, verify the semantic search index is current:
 
-1. Try `mcp__qmd__vsearch` with a simple test query to confirm MCP availability
-2. If MCP is available, proceed to Step 1
-3. If MCP is unavailable (tool fails or returns error): note "retrieval test will be deferred" and proceed — do NOT let index issues block verification
+1. Try `mcp__qmd__vector_search` with a simple test query to confirm MCP availability
+2. If MCP is unavailable (tool fails or returns error), try qmd CLI (`qmd status`) to confirm local CLI availability
+3. If either MCP or qmd CLI is available, proceed to Step 1
+4. If neither MCP nor qmd CLI is available: note "retrieval test will be deferred" and proceed — do NOT let index issues block verification
 
 The index freshness check prevents false retrieval failures on recently created notes. If the index is stale, retrieval test results should be interpreted with that context.
 
@@ -123,15 +124,16 @@ NOW read the complete note. Compare against your prediction.
 
 Test whether the description enables semantic retrieval:
 
-- Try `mcp__qmd__vsearch` with query = "[the note's description text]", collection = "{DOMAIN:notes collection name}", limit = 10
-- If MCP unavailable: report "retrieval test deferred (semantic search unavailable)" — do NOT skip silently
+- Tier 1 (preferred): `mcp__qmd__vector_search` with query = "[the note's description text]", collection = "{vocabulary.notes}", limit = 10
+- Tier 2 (CLI fallback): `qmd vsearch "[the note's description text]" --collection {vocabulary.notes} -n 10`
+- Tier 3: if both MCP and qmd CLI are unavailable, report "retrieval test deferred (semantic search unavailable)" — do NOT skip silently
 
 Check where the note appears in results:
 - Top 3: description works well for semantic retrieval
 - Position 4-10: adequate but could improve
 - Not in top 10: flag — description may not convey the note's meaning
 
-**Why vsearch specifically:** Agents find notes via semantic search during reflect and reweave. Testing with keyword search tests the wrong retrieval method. Full hybrid search with LLM reranking compensates for weak descriptions — too lenient. vsearch tests real semantic findability without hiding bad descriptions behind reranking.
+**Why vector_search specifically:** Agents find notes via semantic search during reflect and reweave. Testing with keyword search tests the wrong retrieval method. Full hybrid search with LLM reranking compensates for weak descriptions — too lenient. vector_search tests real semantic findability without hiding bad descriptions behind reranking.
 
 **6. Draft improved description if needed**
 
@@ -356,7 +358,7 @@ the testing effect applied to vault quality. read only title + description, pred
 
 both degrade the vault's value as a knowledge tool.
 
-**retrieval test rationale:** agents find notes via semantic search during reflect and reweave. testing with BM25 keyword matching tests the wrong retrieval method. full hybrid search with LLM reranking compensates for weak descriptions — too lenient. vsearch tests real semantic findability without hiding bad descriptions.
+**retrieval test rationale:** agents find notes via semantic search during reflect and reweave. testing with BM25 keyword matching tests the wrong retrieval method. full hybrid search with LLM reranking compensates for weak descriptions — too lenient. vector_search tests real semantic findability without hiding bad descriptions.
 
 ## validate: schema compliance
 
@@ -471,7 +473,7 @@ When a task file is in context (pipeline execution), update the `## Verify` sect
 
 Recite:
 - Prediction: N/5 — [brief reason]
-- Retrieval: #N via vsearch (or "deferred")
+- Retrieval: #N via MCP vector_search or CLI vsearch (or "deferred")
 - Description: [kept/improved — brief note]
 
 Validate:

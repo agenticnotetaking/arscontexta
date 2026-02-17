@@ -153,7 +153,7 @@ The same person, concept, or object appears across domains. A colleague tracked 
 **3. Causal Chains**
 A finding or event in one domain causes or explains something in another. A research claim about attention limits explains why a PM process fails. A health protocol change produces measurable effects on creative output.
 
-**Discovery mechanism:** Semantic search across domains. The reflect phase uses `mcp__qmd__query` without domain filtering to find conceptually related notes across all domains.
+**Discovery mechanism:** Semantic search across domains. The reflect phase uses `mcp__qmd__deep_search` without domain filtering to find conceptually related notes across all domains.
 
 **Example:** "Your research claim that [[attention degrades nonlinearly after the third concurrent task]] may explain the PM pattern in [[cross-team dependencies cause more delays than technical complexity]] — the dependencies force context switching that triggers the attention degradation."
 

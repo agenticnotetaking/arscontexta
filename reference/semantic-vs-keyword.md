@@ -39,9 +39,9 @@ Questions the engine must answer when generating search configuration:
 
 **Summary:** Vector embeddings project text into a high-dimensional space where semantic similarity corresponds to geometric proximity. Two notes about "friction in learning systems" and "errors as pedagogical feedback" share no significant keywords but occupy nearby regions in embedding space. This is the core value proposition of semantic search: it finds connections that keyword search structurally cannot, because keyword search requires vocabulary overlap that semantic relatedness does not guarantee.
 
-**Derivation Implication:** Semantic search (vsearch) becomes valuable when vocabulary divergence is expected — which correlates with note volume, processing intensity, and domain breadth. Systems with heavy processing generate more reformulations of the same concepts, increasing the chance that two notes about the same idea use different words.
+**Derivation Implication:** Semantic search (`vector_search`) becomes valuable when vocabulary divergence is expected — which correlates with note volume, processing intensity, and domain breadth. Systems with heavy processing generate more reformulations of the same concepts, increasing the chance that two notes about the same idea use different words.
 
-**Source:** Mikolov et al., "Efficient Estimation of Word Representations in Vector Space" (2013). Operationally confirmed: the vault's qmd vsearch catches duplicates that BM25 misses entirely.
+**Source:** Mikolov et al., "Efficient Estimation of Word Representations in Vector Space" (2013). Operationally confirmed: the vault's qmd vector-search catches duplicates that BM25 misses entirely.
 
 ---
 
@@ -49,7 +49,7 @@ Questions the engine must answer when generating search configuration:
 
 **Summary:** Query expansion takes the user's original query and generates alternative formulations before searching. "Knowledge management friction" might expand to "obstacles in personal knowledge systems," "note-taking workflow bottlenecks," and "PKM failure patterns." Each expanded query runs against the embedding index, and results are merged. This compensates for the single-query blind spot where the searcher's phrasing might not match the embedding space's optimal representation of the concept.
 
-**Derivation Implication:** Query expansion is a feature of hybrid search mode (the qmd `query` tool). It adds latency (~5-15 seconds) but significantly improves recall for exploratory searches. Generated systems should use expansion for connection-finding and deep exploration, not for quick lookups.
+**Derivation Implication:** Query expansion is a feature of hybrid search mode (the qmd `deep_search` tool). It adds latency (~5-15 seconds) but significantly improves recall for exploratory searches. Generated systems should use expansion for connection-finding and deep exploration, not for quick lookups.
 
 **Source:** Operational experience with qmd's expansion pipeline. Grounded in Rocchio relevance feedback (1971) adapted for neural retrieval.
 
@@ -61,7 +61,7 @@ Questions the engine must answer when generating search configuration:
 
 **Derivation Implication:** LLM reranking is the highest-quality search mode and should be reserved for tasks where connection quality matters most: reflect (finding connections for new notes), reweave (updating old notes), and exploratory research. It should NOT be the default for routine lookups.
 
-**Source:** Nogueira & Cho, "Passage Re-ranking with BERT" (2019). Operationally validated in the vault's qmd `query` mode, which uses LLM reranking as the final stage.
+**Source:** Nogueira & Cho, "Passage Re-ranking with BERT" (2019). Operationally validated in the vault's qmd `deep_search` mode, which uses LLM reranking as the final stage.
 
 ---
 
@@ -81,7 +81,7 @@ Questions the engine must answer when generating search configuration:
 
 **Summary:** When the agent is exploring a concept without knowing which notes are relevant, semantic search finds candidates that keyword search misses. Searching for "how agents maintain identity across sessions" might surface notes titled "session handoff creates continuity without persistent memory" and "closure rituals create clean breaks" — neither of which contains the words "identity" or "maintain" but both are deeply relevant. This is the canonical use case for embedding-based retrieval.
 
-**Derivation Implication:** Generated systems should route conceptual exploration to semantic search (vsearch). This applies to: the reflect phase (finding connections for a new note), pre-creation duplicate detection (does this claim already exist under different words?), and ad-hoc research queries. The context file should teach the agent when to switch from keyword to semantic.
+**Derivation Implication:** Generated systems should route conceptual exploration to semantic search (`vector_search`). This applies to: the reflect phase (finding connections for a new note), pre-creation duplicate detection (does this claim already exist under different words?), and ad-hoc research queries. The context file should teach the agent when to switch from keyword to semantic.
 
 **Source:** Vault operational experience. The claim "vector proximity measures surface overlap not deep connection" documents both the value and limitations of this modality.
 
@@ -93,7 +93,7 @@ Questions the engine must answer when generating search configuration:
 
 **Derivation Implication:** Generated systems with processing = heavy or moderate should include a hybrid search mode for the reflect and reweave phases. Systems with processing = light can skip hybrid search because they generate fewer notes and the agent can use MOC traversal + keyword search for the limited connection-finding needed.
 
-**Source:** Vault operational experience. The reflect skill uses `mcp__qmd__query` (hybrid) because connection quality justifies the ~20s latency.
+**Source:** Vault operational experience. The reflect skill uses `mcp__qmd__deep_search` (hybrid) because connection quality justifies the ~20s latency.
 
 ---
 
@@ -103,7 +103,7 @@ Questions the engine must answer when generating search configuration:
 
 **Derivation Implication:** Any generated system with a processing pipeline (reduce phase) should include semantic duplicate detection. The reduce skill should check each extracted claim against the existing note corpus via semantic search before creating a new note. This is a quality gate, not an optional convenience.
 
-**Source:** Vault operational experience. The reduce skill uses `mcp__qmd__vsearch` for duplicate detection, and regularly catches duplicates that would be invisible to keyword search.
+**Source:** Vault operational experience. The reduce skill uses `mcp__qmd__vector_search` for duplicate detection, and regularly catches duplicates that would be invisible to keyword search.
 
 ---
 
@@ -111,9 +111,9 @@ Questions the engine must answer when generating search configuration:
 
 **Summary:** Testing whether a note's description enables retrieval means searching for the note using only its description, without the title. If semantic search (without LLM reranking) finds the note from its description alone, the description is doing its job as a retrieval filter. If it fails, the description needs improvement. Using reranking would hide bad descriptions behind the LLM's ability to infer relevance — the test must use raw vector similarity to expose weak descriptions.
 
-**Derivation Implication:** Generated systems with a verify or recite phase should use semantic search (vsearch, not query) for description quality testing. The absence of reranking is intentional — it tests what agents will actually encounter during routine search.
+**Derivation Implication:** Generated systems with a verify or recite phase should use semantic search (`vector_search`, not `deep_search`) for description quality testing. The absence of reranking is intentional — it tests what agents will actually encounter during routine search.
 
-**Source:** Vault operational experience. The recite and verify skills use `mcp__qmd__vsearch` to test description findability, specifically avoiding the query tool's reranking.
+**Source:** Vault operational experience. The recite and verify skills use `mcp__qmd__vector_search` to test description findability, specifically avoiding the deep_search tool's reranking.
 
 ---
 
@@ -179,7 +179,7 @@ Questions the engine must answer when generating search configuration:
 
 **Derivation Implication:** Generated context files should include a search quality warning: "High similarity scores do not guarantee genuine connections. When using semantic search results, evaluate each candidate: does this note's argument actually relate to what you are searching for, or does it just use similar vocabulary?" This is especially important for the reflect phase where false connections degrade graph quality.
 
-**Source:** Research claim: "vector proximity measures surface overlap not deep connection." Vault operational experience: reflect phases using vsearch without reranking occasionally propose surface-similar but conceptually unrelated connections.
+**Source:** Research claim: "vector proximity measures surface overlap not deep connection." Vault operational experience: reflect phases using vector_search without reranking occasionally propose surface-similar but conceptually unrelated connections.
 
 ---
 
@@ -199,7 +199,7 @@ Questions the engine must answer when generating search configuration:
 
 **Derivation Implication:** Generated context files that instruct agents on search usage should distinguish between query formulation for keyword search (short, focused terms) and query formulation for semantic search (natural language descriptions). A single instruction like "search for your concept" is insufficient — the agent needs to know how to phrase queries differently for each modality.
 
-**Source:** Vault operational experience. Full-length descriptions used as BM25 queries via `mcp__qmd__search` frequently returned zero results, while the same descriptions used via `mcp__qmd__vsearch` returned accurate matches.
+**Source:** Vault operational experience. Full-length descriptions used as BM25 queries via `mcp__qmd__search` frequently returned zero results, while the same descriptions used via `mcp__qmd__vector_search` returned accurate matches.
 
 ---
 

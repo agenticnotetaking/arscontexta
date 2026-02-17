@@ -5,7 +5,7 @@ version: "1.0"
 generated_from: "arscontexta-v1.6"
 context: fork
 model: opus
-allowed-tools: Read, Grep, Glob, Bash, mcp__qmd__vsearch
+allowed-tools: Read, Grep, Glob, Bash, mcp__qmd__vector_search
 argument-hint: "[optional: 'quick', 'full', or 'three-space']"
 ---
 

@@ -250,14 +250,28 @@ fi
 # --- Primitive 10: Semantic search (CONFIGURABLE) ---
 echo "10. Semantic search capability (configurable)"
 has_search=false
-[ -f "$VAULT/.mcp.json" ] && grep -q "qmd\|search\|embed" "$VAULT/.mcp.json" 2>/dev/null && has_search=true
-command -v qmd &>/dev/null && has_search=true
+has_search_mcp=false
+has_search_cli=false
+has_search_docs=false
+
+[ -f "$VAULT/.mcp.json" ] && grep -q '"qmd"' "$VAULT/.mcp.json" 2>/dev/null && grep -q '"mcp"' "$VAULT/.mcp.json" 2>/dev/null && has_search_mcp=true
+command -v qmd &>/dev/null && has_search_cli=true
 for ctx in "$VAULT/CLAUDE.md"; do
-    [ -f "$ctx" ] && grep -qi "semantic search\|qmd\|vsearch" "$ctx" 2>/dev/null && has_search=true
+    [ -f "$ctx" ] && grep -qi "semantic search\|qmd\|vector_search\|deep_search" "$ctx" 2>/dev/null && has_search_docs=true
 done
 
+if $has_search_mcp || $has_search_cli; then
+    has_search=true
+fi
+
 if $has_search; then
-    pass "Semantic search capability found"
+    details=""
+    $has_search_mcp && details="${details}.mcp.json qmd server, "
+    $has_search_cli && details="${details}qmd executable, "
+    details=$(echo "$details" | sed 's/, $//')
+    pass "Semantic search capability found (${details})"
+elif $has_search_docs; then
+    warn "Semantic search mentioned in docs but no qmd executable or .mcp.json qmd server config detected"
 else
     pass "Semantic search not enabled (configurable)"
 fi

@@ -30,7 +30,7 @@ pipeline_position: meta_cognitive  # operates outside the main pipeline
 | `{vocabulary.note}` / `{vocabulary.note_plural}` | Note type | `claim` / `claims` | `reflection` / `reflections` |
 | `{vocabulary.topic_map}` / `{vocabulary.topic_map_plural}` | MOC reference | `MOC` / `MOCs` | `theme map` / `theme maps` |
 | `{vocabulary.inbox}` | Inbox folder name | `inbox/` | `journal/` |
-| `{vocabulary.notes_collection}` | qmd collection name | `thinking` | `reflections` |
+| `{vocabulary.notes}` | qmd collection name | `notes` | `reflections` |
 
 ## Processing Depth Calibration
 

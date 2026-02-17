@@ -1174,7 +1174,14 @@ vocabulary:
 platform_hints:
   context: [fork | single]
   allowed_tools: [tool list based on platform tier]
-  semantic_search_tool: [mcp__qmd__query | null]
+  semantic_search_tool: [mcp__qmd__deep_search | null]
+  semantic_search_autoapprove:
+    - mcp__qmd__search
+    - mcp__qmd__vector_search
+    - mcp__qmd__deep_search
+    - mcp__qmd__get
+    - mcp__qmd__multi_get
+    - mcp__qmd__status
 
 personality:
   warmth: [clinical | warm | playful]
@@ -1450,13 +1457,18 @@ Welcome to your [domain] system.
 1. Check if `qmd` is installed: `which qmd`
 2. If installed:
    - Run `qmd init` in the generated vault root
-   - Configure collections matching generated folder structure
-   - Generate `.mcp.json` with qmd server configuration
+   - Configure or update the qmd collection for `{vocabulary.notes}` so it points at the generated notes directory
+   - Create or merge `.mcp.json` in the vault root with this qmd MCP server contract:
+     - `{"mcpServers":{"qmd":{"command":"qmd","args":["mcp"],"autoapprove":["mcp__qmd__search","mcp__qmd__vector_search","mcp__qmd__deep_search","mcp__qmd__get","mcp__qmd__multi_get","mcp__qmd__status"]}}}`
    - Run `qmd update && qmd embed` to build the initial index
 3. If NOT installed:
    - Add a "Next Steps" section to the Phase 6 summary telling the user to install qmd
-   - Include specific commands: `brew install qmd` (or platform equivalent), `qmd init`, collection configuration
-   - The generated context file still documents semantic search patterns -- they activate once qmd is installed
+   - Include specific commands:
+     - `npm install -g @tobilu/qmd` (or `bun install -g @tobilu/qmd`)
+     - `qmd init`
+     - `qmd collection add . --name {vocabulary.notes} --mask "**/*.md"`
+     - `qmd update && qmd embed`
+   - Include the `.mcp.json` qmd MCP contract with `autoapprove` entries in setup output so activation is deterministic once qmd is installed
 
 ---
 
@@ -1640,7 +1652,7 @@ Next steps:
   1. Quit and restart Claude Code (required — skills won't work until you do)
   2. Read your CLAUDE.md -- it's your complete methodology
   3. Try /arscontexta:help to see all available commands
-  4. [If qmd not installed: "Install qmd for semantic search: brew install qmd"]
+  4. [If qmd not installed: "Install qmd for semantic search: npm install -g @tobilu/qmd (or bun install -g @tobilu/qmd), then run qmd init, qmd update, qmd embed"]
   5. [If personality not enabled: "Run /arscontexta:architect later to tune the agent's voice"]
   6. Try /arscontexta:tutorial for a guided walkthrough
 
@@ -1649,7 +1661,7 @@ Next steps:
 ### Conditional Next Steps
 
 Include these based on system state:
-- If qmd not installed and semantic-search is active: installation instructions
+- If qmd not installed and semantic-search is active: npm/bun install instructions + qmd init/update/embed + `.mcp.json` contract
 - If personality not enabled: mention `/arscontexta:architect` for future voice tuning once the vault has 50+ notes
 - If any kernel checks failed: specific remediation instructions
 

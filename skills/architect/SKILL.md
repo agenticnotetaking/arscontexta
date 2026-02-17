@@ -6,7 +6,7 @@ generated_from: "arscontexta-v1.6"
 user-invocable: true
 context: fork
 model: opus
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vsearch, mcp__qmd__query, mcp__qmd__get
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vector_search, mcp__qmd__deep_search, mcp__qmd__get, mcp__qmd__multi_get
 argument-hint: "[optional: specific area to focus on, e.g. 'schema', 'processing', 'MOC structure']"
 ---
 
@@ -314,15 +314,16 @@ For each friction pattern or health issue identified in Phases 3-4:
 - What does the failure mode document say about mitigation?
 
 **Step 4: Search the knowledge graph**
-- Use `mcp__qmd__query` to find claims that address the specific friction
-- Fall back to `mcp__qmd__vsearch` if hybrid search is unavailable
-- Fall back to reading bundled reference files directly if MCP is entirely unavailable
+- Use `mcp__qmd__deep_search` to find claims that address the specific friction
+- Fall back to `mcp__qmd__vector_search` if hybrid search is unavailable
+- If MCP is unavailable, fall back to qmd CLI (`qmd query` then `qmd vsearch`)
+- Fall back to reading bundled reference files directly only if both MCP and qmd CLI are unavailable
 - Search for the friction pattern described in natural language
 - Search for the system area affected
 - Search for proposed solution concepts
 
 ```
-mcp__qmd__query  query="[friction description in natural language]"  limit=10
+mcp__qmd__deep_search  query="[friction description in natural language]"  limit=10
 ```
 
 Read the top results. For each relevant claim:

@@ -214,12 +214,43 @@ Query directly: `/arscontexta:ask "Why does my system use atomic notes?"`
 [qmd](https://github.com/tobi/qmd) adds concept matching across vocabularies.
 Not required -- the system works fully with ripgrep + MOC traversal.
 
+`/setup` should perform this configuration automatically when semantic search is active.
+The commands below are manual fallback/setup verification.
+
 ```bash
-brew install tobi/tap/qmd    # macOS
-cd your-vault/ && qmd init && qmd update && qmd embed
+# Install qmd
+npm install -g @tobilu/qmd
+# or
+bun install -g @tobilu/qmd
+
+cd your-vault/
+qmd init
+qmd collection add . --name <notes_directory_name> --mask "<notes_directory_name>/**/*.md"
+qmd embed
 ```
 
-The plugin bundles MCP configuration that connects qmd automatically.
+Create or merge `.mcp.json` in the vault root:
+
+```json
+{
+  "mcpServers": {
+    "qmd": {
+      "command": "qmd",
+      "args": ["mcp"],
+      "autoapprove": [
+        "mcp__qmd__search",
+        "mcp__qmd__vector_search",
+        "mcp__qmd__deep_search",
+        "mcp__qmd__get",
+        "mcp__qmd__multi_get",
+        "mcp__qmd__status"
+      ]
+    }
+  }
+}
+```
+
+Keep qmd MCP configuration and tool preapproval in `.mcp.json`.
 
 ---
 

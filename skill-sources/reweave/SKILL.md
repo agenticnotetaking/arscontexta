@@ -2,7 +2,7 @@
 name: reweave
 description: Update old notes with new connections. The backward pass that /reflect doesn't do. Revisit existing notes that predate newer related content, add connections, sharpen claims, consider splits. Triggers on "/reweave", "/reweave [note]", "update old notes", "backward connections", "revisit notes".
 user-invocable: true
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vsearch, mcp__qmd__query, mcp__qmd__status
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vector_search, mcp__qmd__deep_search, mcp__qmd__status
 context: fork
 model: opus
 ---
@@ -175,7 +175,7 @@ From the {vocabulary.note}'s Topics footer, identify which {vocabulary.topic_map
 
 **Three-tier fallback for semantic search:**
 
-**Tier 1 — MCP tools (preferred):** Use `mcp__qmd__query` (hybrid search with expansion + reranking):
+**Tier 1 — MCP tools (preferred):** Use `mcp__qmd__deep_search` (hybrid search with expansion + reranking):
 - query: "[{vocabulary.note}'s core concepts and mechanisms]"
 - limit: 15
 
@@ -183,7 +183,7 @@ From the {vocabulary.note}'s Topics footer, identify which {vocabulary.topic_map
 ```bash
 LOCKDIR="ops/queue/.locks/qmd.lock"
 while ! mkdir "$LOCKDIR" 2>/dev/null; do sleep 2; done
-qmd query "[note's core concepts]" --collection thinking --limit 15 2>/dev/null
+qmd query "[note's core concepts]" --collection {vocabulary.notes} --limit 15 2>/dev/null
 rm -rf "$LOCKDIR"
 ```
 

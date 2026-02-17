@@ -37,12 +37,38 @@ Claude Code settings file configuring:
 
 - **Hook configuration** -- event → matcher group → handler format (see `platforms/claude-code/hooks/README.md`)
 - Allowed tools and permissions
-- MCP server connections (if semantic search is enabled)
 - Project-specific settings
 
 Hook configuration lives in `.claude/settings.json` under the `"hooks"` key, using the nested matcher-group format. The plugin's own hooks (`hooks/hooks.json`) use the same format and are merged automatically by Claude Code when the plugin is enabled.
 
-### 4. Processing Skills
+### 4. .mcp.json (MCP Server Config)
+
+MCP server wiring for semantic search is configured in `.mcp.json`.
+
+For qmd-enabled systems, generate or merge:
+
+```json
+{
+  "mcpServers": {
+    "qmd": {
+      "command": "qmd",
+      "args": ["mcp"],
+      "autoapprove": [
+        "mcp__qmd__search",
+        "mcp__qmd__vector_search",
+        "mcp__qmd__deep_search",
+        "mcp__qmd__get",
+        "mcp__qmd__multi_get",
+        "mcp__qmd__status"
+      ]
+    }
+  }
+}
+```
+
+Merge additively: preserve existing non-qmd MCP servers and only upsert the qmd block.
+
+### 5. Processing Skills
 
 Processing skills (/reduce, /reflect, /reweave, /verify, /validate) are inherited from the plugin's `skills/` directory -- they are NOT copied to user projects. Skills read `ops/derivation-manifest.md` at runtime for domain vocabulary transformation, so a therapy system's `/surface` resolves to the canonical `/reduce` skill automatically.
 
