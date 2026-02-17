@@ -145,8 +145,8 @@ NOW read the complete {vocabulary.note}. Compare against your prediction.
 Test whether the description enables semantic retrieval:
 
 {if config.semantic_search}
-- (preferred): `mcp__qmd__vector_search` with query = "[the {vocabulary.note}'s description text]", collection = "{vocabulary.notes}", limit = 10
-- (CLI fallback): `qmd vsearch "[the {vocabulary.note}'s description text]" --collection {vocabulary.notes} -n 10`
+- (preferred): `mcp__qmd__vector_search` with query = "[the {vocabulary.note}'s description text]", collection = "{vocabulary.notes_collection}", limit = 10
+- (CLI fallback): `qmd vsearch "[the {vocabulary.note}'s description text]" --collection {vocabulary.notes_collection} -n 10`
 - if both MCP and qmd CLI are unavailable, report "retrieval test deferred (semantic search unavailable)" — do NOT skip silently
 
 Check where the {vocabulary.note} appears in results:

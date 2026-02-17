@@ -78,7 +78,7 @@ ls -d {config.ops_dir}/queue/archive/*-${SOURCE_NAME}* 2>/dev/null
 If semantic search is available (qmd MCP tools or CLI), check for content overlap:
 
 ```
-mcp__qmd__search query="{vocabulary.note_plural} from {source filename}" collection="{vocabulary.notes}" limit=5
+mcp__qmd__search query="{vocabulary.note_plural} from {source filename}" collection="{vocabulary.notes_collection}" limit=5
 ```
 {endif}
 

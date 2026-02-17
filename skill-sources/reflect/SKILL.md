@@ -120,7 +120,7 @@ Before using semantic search, verify the index is current. This is self-healing:
    ```bash
    LOCKDIR="ops/queue/.locks/qmd.lock"
    while ! mkdir "$LOCKDIR" 2>/dev/null; do sleep 2; done
-   qmd_count=$(qmd status 2>/dev/null | grep -A2 '{vocabulary.notes}' | grep 'documents' | grep -oE '[0-9]+' | head -1)
+   qmd_count=$(qmd status 2>/dev/null | grep -A2 '{vocabulary.notes_collection}' | grep 'documents' | grep -oE '[0-9]+' | head -1)
    rm -rf "$LOCKDIR"
    ```
 3. Count actual files:
@@ -185,7 +185,7 @@ If you know the topic (check the {vocabulary.note}'s Topics footer), start with 
 ```bash
 LOCKDIR="ops/queue/.locks/qmd.lock"
 while ! mkdir "$LOCKDIR" 2>/dev/null; do sleep 2; done
-qmd query "[note's core concepts]" --collection {vocabulary.notes} --limit 15 2>/dev/null
+qmd query "[note's core concepts]" --collection {vocabulary.notes_collection} --limit 15 2>/dev/null
 rm -rf "$LOCKDIR"
 ```
 

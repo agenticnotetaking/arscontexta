@@ -1457,7 +1457,7 @@ Welcome to your [domain] system.
 1. Check if `qmd` is installed: `which qmd`
 2. If installed:
    - Run `qmd init` in the generated vault root
-   - Configure or update the qmd collection for `{vocabulary.notes}` so it points at the generated notes directory
+   - Configure or update the qmd collection for `{vocabulary.notes_collection}` so it points at the generated notes directory
    - Create or merge `.mcp.json` in the vault root with this qmd MCP server contract:
      - `{"mcpServers":{"qmd":{"command":"qmd","args":["mcp"],"autoapprove":["mcp__qmd__search","mcp__qmd__vector_search","mcp__qmd__deep_search","mcp__qmd__get","mcp__qmd__multi_get","mcp__qmd__status"]}}}`
    - Run `qmd update && qmd embed` to build the initial index
@@ -1466,7 +1466,7 @@ Welcome to your [domain] system.
    - Include specific commands:
      - `npm install -g @tobilu/qmd` (or `bun install -g @tobilu/qmd`)
      - `qmd init`
-     - `qmd collection add . --name {vocabulary.notes} --mask "**/*.md"`
+     - `qmd collection add . --name {vocabulary.notes_collection} --mask "**/*.md"`
      - `qmd update && qmd embed`
    - Include the `.mcp.json` qmd MCP contract with `autoapprove` entries in setup output so activation is deterministic once qmd is installed
 

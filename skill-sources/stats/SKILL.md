@@ -19,7 +19,7 @@ Read these files to configure domain-specific behavior:
    - Use `vocabulary.note` / `vocabulary.note_plural` for note type references
    - Use `vocabulary.topic_map` / `vocabulary.topic_map_plural` for MOC references
    - Use `vocabulary.inbox` for the inbox folder name
-   - Use `vocabulary.notes` for semantic search collection name
+   - Use `vocabulary.notes_collection` for semantic search collection name
 
 2. **`ops/config.yaml`** — processing depth, automation settings
 

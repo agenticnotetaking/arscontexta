@@ -183,7 +183,7 @@ From the {vocabulary.note}'s Topics footer, identify which {vocabulary.topic_map
 ```bash
 LOCKDIR="ops/queue/.locks/qmd.lock"
 while ! mkdir "$LOCKDIR" 2>/dev/null; do sleep 2; done
-qmd query "[note's core concepts]" --collection {vocabulary.notes} --limit 15 2>/dev/null
+qmd query "[note's core concepts]" --collection {vocabulary.notes_collection} --limit 15 2>/dev/null
 rm -rf "$LOCKDIR"
 ```
 
