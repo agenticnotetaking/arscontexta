@@ -1290,7 +1290,6 @@ For each skill:
 4. Write the transformed SKILL.md to the user's skills directory
 5. Validate generated skill frontmatter from the generated vault root:
    - Single skill: `${CLAUDE_PLUGIN_ROOT}/reference/validate-setup.sh [skill-name]`
-   - This check enforces YAML delimiters plus required frontmatter keys (`name`, `description`, `user-invocable`, `allowed-tools`, `context`, `model`)
    - If validation fails: re-read the source template's frontmatter from `${CLAUDE_PLUGIN_ROOT}/skill-sources/[name]/SKILL.md`, vocabulary-transform the field values, and replace only the frontmatter section of the generated skill. Do NOT regenerate the skill body.
 
 **For Claude Code:** Write to `.claude/skills/[domain-skill-name]/SKILL.md`

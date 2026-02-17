@@ -1,6 +1,6 @@
 # Testing Milestones
 
-Seven core validation milestones plus one setup-specific preflight check for skill frontmatter. Together they test distinct layers of the system: from kernel correctness through vocabulary transformation to cross-platform parity. Run them in order — later milestones depend on earlier ones passing.
+Seven validation milestones for the Ars Contexta v1.6 plugin. Each milestone tests a distinct layer of the system: from kernel correctness through vocabulary transformation to cross-platform parity. Run them in order — later milestones depend on earlier ones passing.
 
 ---
 
