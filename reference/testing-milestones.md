@@ -1,6 +1,6 @@
 # Testing Milestones
 
-Seven validation milestones for the Ars Contexta v1.6 plugin. Each milestone tests a distinct layer of the system: from kernel correctness through vocabulary transformation to cross-platform parity. Run them in order — later milestones depend on earlier ones passing.
+Seven core validation milestones plus one setup-specific preflight check for skill frontmatter. Together they test distinct layers of the system: from kernel correctness through vocabulary transformation to cross-platform parity. Run them in order — later milestones depend on earlier ones passing.
 
 ---
 
@@ -85,6 +85,46 @@ All 15 primitives validated successfully.
 | FAIL on primitive 13 (task stack) | Missing ops/tasks/ or task stack mechanism | Ensure /setup creates task stack infrastructure |
 | FAIL on primitive 14 (methodology folder) | Missing ops/methodology/ directory | Ensure /setup creates ops/methodology/ with linked notes |
 | FAIL on primitive 15 (session capture) | Missing ops/sessions/ or stop hook for transcript persistence | Ensure /setup creates ops/sessions/ and configures session capture hook |
+
+---
+
+## Milestone 1b: Skill Frontmatter Validation
+
+**What it tests:** Generated skills in `.claude/skills/` retain YAML frontmatter format (not markdown tables or malformed blocks) and include required setup fields.
+
+**Prerequisites:**
+- A generated vault from /setup with skills in `.claude/skills/`
+- `validate-setup.sh` accessible at `./reference/validate-setup.sh`
+
+**Pass criteria:** `validate-setup.sh` returns zero FAILs for the generated vault.
+
+**Verification steps:**
+
+```bash
+# Run setup-frontmatter validation against the generated vault
+./reference/validate-setup.sh /path/to/generated-vault
+
+# Or validate a single skill
+./reference/validate-setup.sh /path/to/generated-vault reduce
+```
+
+**Expected output on success:**
+
+```
+=== Skill Frontmatter Validation: /path/to/generated-vault/.claude/skills ===
+  PASS ...
+=== Skill Frontmatter Summary ===
+  FAIL: 0
+All N skill(s) have valid frontmatter.
+```
+
+**Common failure modes and remediation:**
+
+| Failure | Cause | Fix |
+|---------|-------|-----|
+| First line is a table row (for example `\| name \| ...`) | Frontmatter was emitted as markdown table instead of YAML | Re-read source template frontmatter from `skill-sources/[name]/SKILL.md`, vocabulary-transform values, replace only frontmatter |
+| Missing required field (`name`, `description`, `user-invocable`, `allowed-tools`, `context`, `model`) | Field dropped during generation | Regenerate frontmatter from source template; preserve the skill body |
+| Invalid line inside frontmatter block | Frontmatter closing delimiter or YAML shape was mangled | Regenerate frontmatter block only |
 
 ---
 
@@ -867,6 +907,7 @@ Each preset should produce:
 
 # 2. Run milestones in order
 echo "=== Milestone 1: Kernel ===" && ./reference/validate-kernel.sh /tmp/test-research
+echo "=== Milestone 1b: Skill Frontmatter ===" && ./reference/validate-setup.sh /tmp/test-research
 echo "=== Milestone 2: Context ==="  # (run section checks manually or via script above)
 echo "=== Milestone 3: Vocabulary ===" # (run against therapy vault)
 echo "=== Milestone 4: Pipeline ===" # (requires active agent session)
@@ -880,6 +921,7 @@ echo "=== Milestone 6: Presets ===" # (run for all 3 presets)
 
 ```
 M1 (Kernel) ← no dependencies
+M1b (Skill Frontmatter) ← no dependencies
 M2 (Context) ← M1 (kernel must pass first)
 M3 (Vocabulary) ← M2 (context must exist)
 M4 (Pipeline) ← M1 + M2 (kernel + context)
@@ -889,4 +931,4 @@ M5c (Condition-Based) ← M1 + M2 (kernel + context)
 M6 (Presets) ← M1 + M2 + M3 (validates all three for each preset)
 ```
 
-Milestones 1-3 can be automated as a CI check. Milestones 4-5c require an active agent session. Milestone 6 requires generating multiple vaults and is best run as a manual test suite.
+Milestones 1, 1b, 2, and 3 can be automated as a CI check. Milestones 4-5c require an active agent session. Milestone 6 requires generating multiple vaults and is best run as a manual test suite.

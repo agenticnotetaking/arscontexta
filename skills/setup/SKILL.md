@@ -1288,6 +1288,10 @@ For each skill:
 2. Apply vocabulary transformation — rename and update ALL internal references using the vocabulary mapping from `ops/derivation.md`
 3. Adjust skill metadata (set `context: fork` for fresh context per invocation)
 4. Write the transformed SKILL.md to the user's skills directory
+5. Validate generated skill frontmatter from the generated vault root:
+   - Single skill: `${CLAUDE_PLUGIN_ROOT}/reference/validate-setup.sh [skill-name]`
+   - This check enforces YAML delimiters plus required frontmatter keys (`name`, `description`, `user-invocable`, `allowed-tools`, `context`, `model`)
+   - If validation fails: re-read the source template's frontmatter from `${CLAUDE_PLUGIN_ROOT}/skill-sources/[name]/SKILL.md`, vocabulary-transform the field values, and replace only the frontmatter section of the generated skill. Do NOT regenerate the skill body.
 
 **For Claude Code:** Write to `.claude/skills/[domain-skill-name]/SKILL.md`
 
@@ -1538,6 +1542,12 @@ Run all 15 primitive checks against the generated system. Use `${CLAUDE_PLUGIN_R
 15. **session-capture** -- ops/sessions/ directory exists? Session-end hook template installed? Condition-based mining trigger exists for unprocessed sessions?
 
 Report results: pass/fail per primitive with specific failures listed.
+
+### Skill Frontmatter Validation
+
+Run `${CLAUDE_PLUGIN_ROOT}/reference/validate-setup.sh` from the generated vault root (whole-vault mode). This catches any skill frontmatter that was mangled during generation.
+
+If any skill fails: re-read that skill's source template frontmatter from `${CLAUDE_PLUGIN_ROOT}/skill-sources/[name]/SKILL.md`, vocabulary-transform the field values, and replace only the frontmatter of the generated skill. Preserve the skill body — only the frontmatter needs regeneration.
 
 ### Pipeline Smoke Test
 
