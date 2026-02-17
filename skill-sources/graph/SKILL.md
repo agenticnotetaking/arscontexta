@@ -5,7 +5,7 @@ version: "1.0"
 generated_from: "arscontexta-v1.6"
 user-invocable: true
 context: fork
-model: opus
+model: sonnet
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[operation] [target] — operations: health, triangles, bridges, clusters, hubs, siblings, forward, backward, query"
 ---

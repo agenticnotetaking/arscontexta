@@ -2,7 +2,7 @@
 name: setup
 description: Scaffold a complete knowledge system. Detects platform, conducts conversation, derives configuration, generates everything. Validates against 15 kernel primitives. Triggers on "/setup", "/setup --advanced", "set up my knowledge system", "create my vault".
 context: fork
-model: opus
+model: sonnet
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 argument-hint: "[--advanced for upfront dimension configuration]"
 ---
