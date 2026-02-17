@@ -4,7 +4,6 @@ description: Update old notes with new connections. The backward pass that /refl
 user-invocable: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__qmd__search, mcp__qmd__vector_search, mcp__qmd__deep_search, mcp__qmd__status
 context: fork
-model: opus
 ---
 
 ## Runtime Configuration (Step 0 — before any processing)

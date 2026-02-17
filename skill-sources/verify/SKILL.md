@@ -4,7 +4,6 @@ description: Combined verification — recite (description quality via cold-read
 user-invocable: true
 allowed-tools: Read, Write, Edit, Grep, Glob, mcp__qmd__vector_search
 context: fork
-model: opus
 ---
 
 ## Runtime Configuration (Step 0 — before any processing)

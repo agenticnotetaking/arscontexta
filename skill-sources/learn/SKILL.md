@@ -4,7 +4,6 @@ description: Research a topic and grow your knowledge graph. Uses Exa deep resea
 user-invocable: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash, mcp__exa__web_search_exa, mcp__exa__deep_researcher_start, mcp__exa__deep_researcher_check, WebSearch
 context: fork
-model: opus
 ---
 
 ## EXECUTE NOW

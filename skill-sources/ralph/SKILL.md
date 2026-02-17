@@ -5,7 +5,6 @@ version: "1.0"
 generated_from: "arscontexta-v1.6"
 user-invocable: true
 context: fork
-model: opus
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash, Task
 argument-hint: "N [--parallel] [--batch id] [--type extract] [--dry-run] — N = number of tasks to process"
 ---
@@ -60,10 +59,9 @@ Each phase maps to specific Task tool parameters. Use these EXACTLY when spawnin
 
 **All phases use the same subagent configuration:**
 - subagent_type: knowledge-worker (if available) or default
-- model: opus
 - mode: dontAsk
 
-**Why opus for all phases:** Tokens are free, quality is not. Fresh context per phase already ensures efficiency — every phase gets full capability in the smart zone.
+Subagents inherit the session model. Users running opus get opus quality on processing phases. Users running sonnet get sonnet everywhere. Fresh context per phase already ensures efficiency — every phase gets full capability in the smart zone.
 
 ---
 

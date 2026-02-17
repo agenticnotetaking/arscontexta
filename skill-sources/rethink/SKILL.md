@@ -4,7 +4,6 @@ description: Challenge system assumptions against accumulated evidence. Triages 
 user-invocable: true
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash, AskUserQuestion
 context: fork
-model: opus
 ---
 
 ## Runtime Configuration (Step 0 — before any processing)

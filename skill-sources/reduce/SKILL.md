@@ -6,7 +6,6 @@ generated_from: "arscontexta-v1.6"
 user-invocable: true
 allowed-tools: Read, Write, Grep, Glob, mcp__qmd__vector_search
 context: fork
-model: opus
 ---
 
 ## Runtime Configuration (Step 0 — before any processing)

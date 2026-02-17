@@ -5,7 +5,6 @@ version: "1.0"
 generated_from: "arscontexta-v1.6"
 user-invocable: true
 context: fork
-model: opus
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 argument-hint: "[dimension|--dry-run] — focus on specific dimension or preview without approval prompt"
 ---
