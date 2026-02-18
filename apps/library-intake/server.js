@@ -1,4 +1,4 @@
-﻿const http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
@@ -9,6 +9,7 @@ const publicRoot = path.join(__dirname, "public");
 const repoRoot = path.resolve(__dirname, "..", "..");
 const approvedDir = path.join(repoRoot, "ops", "federation", "approved");
 const approvedIndexPath = path.join(approvedDir, "approved-index.json");
+const templateRoot = path.join(__dirname, "templates", "bank");
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -196,6 +197,83 @@ function buildApprovedLatest(programId) {
   };
 }
 
+
+function listBankTemplates() {
+  if (!fs.existsSync(templateRoot)) return [];
+  return fs
+    .readdirSync(templateRoot)
+    .filter((f) => f.endsWith(".json"))
+    .map((fileName) => {
+      const fullPath = path.join(templateRoot, fileName);
+      const parsed = loadJsonIfExists(fullPath, null);
+      if (!parsed) return null;
+      const id = String(parsed.id || fileName.replace(/\.json$/i, "")).trim();
+      if (!id) return null;
+      return {
+        id,
+        title: parsed.title || id,
+        description: parsed.description || "",
+        type: parsed.type === "pack" ? "pack" : "library",
+        tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+        file_name: fileName
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => String(a.title).localeCompare(String(b.title)));
+}
+
+function loadBankTemplateById(templateId) {
+  const normalized = String(templateId || "").trim();
+  if (!normalized) return null;
+  const templates = listBankTemplates();
+  const entry = templates.find((t) => t.id === normalized);
+  if (!entry) return null;
+  const payload = loadJsonIfExists(path.join(templateRoot, entry.file_name), null);
+  if (!payload) return null;
+  return payload;
+}
+
+function buildApprovedCatalog(includeManifest) {
+  const index = loadJsonIfExists(approvedIndexPath, {
+    schema_version: "1.0",
+    updated_at: "",
+    programs: {}
+  });
+
+  const programs = index && index.programs ? index.programs : {};
+  return Object.keys(programs)
+    .map((programId) => {
+      const latest = programs[programId] && programs[programId].latest ? programs[programId].latest : null;
+      if (!latest || !latest.approved_file) return null;
+
+      const approvedPath = path.join(approvedDir, latest.approved_file);
+      const approvedData = loadJsonIfExists(approvedPath, null);
+      if (!approvedData) return null;
+
+      const base = {
+        key: `${latest.program_id}::${latest.revision}`,
+        program_id: latest.program_id,
+        revision: latest.revision,
+        approved_at: latest.approved_at,
+        approved_by: latest.approved_by,
+        libraries_count: Array.isArray(approvedData.manifest && approvedData.manifest.libraries)
+          ? approvedData.manifest.libraries.length
+          : 0
+      };
+
+      if (!includeManifest) return base;
+
+      return {
+        ...base,
+        data: {
+          manifest: approvedData.manifest,
+          answers: approvedData.answers
+        }
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => String(b.approved_at || "").localeCompare(String(a.approved_at || "")));
+}
 function approveRevision(payload) {
   const programId = safeProgramId(payload.programId);
   const revision = String(payload.revision || "").trim();
@@ -302,6 +380,25 @@ async function handleApi(req, res, urlObj) {
     const payload = await collectJson(req);
     const result = approveRevision(payload || {});
     return sendJson(res, result.status, result.body);
+  }
+
+  if (req.method === "GET" && pathname === "/api/templates/bank") {
+    return sendJson(res, 200, { templates: listBankTemplates() });
+  }
+
+  const templateMatch = pathname.match(/^\/api\/templates\/bank\/([^\/]+)$/);
+  if (req.method === "GET" && templateMatch) {
+    const templateId = decodeURIComponent(templateMatch[1]);
+    const template = loadBankTemplateById(templateId);
+    if (!template) {
+      return sendJson(res, 404, { error: "template not found" });
+    }
+    return sendJson(res, 200, { template });
+  }
+
+  if (req.method === "GET" && pathname === "/api/approved/catalog") {
+    const includeManifest = urlObj.searchParams.get("includeManifest") === "1";
+    return sendJson(res, 200, { items: buildApprovedCatalog(includeManifest) });
   }
 
   if (req.method === "GET" && pathname === "/api/approved/latest") {

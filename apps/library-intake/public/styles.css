@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f6f4ef;
   --paper: #fffcf4;
   --ink: #1e2d2f;
@@ -229,12 +229,17 @@ button.primary:hover {
 .library-card,
 .link-card,
 .suggestion-card,
-.prompt-box {
+.prompt-box,
+.template-box {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px;
   margin: 10px 0;
   background: #fff;
+}
+
+.template-box {
+  background: #fffdf8;
 }
 
 .row {
@@ -331,6 +336,36 @@ summary {
   cursor: pointer;
   color: #37545a;
   font-weight: 600;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 28, 30, 0.45);
+}
+
+.modal-card {
+  position: relative;
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 900px) {

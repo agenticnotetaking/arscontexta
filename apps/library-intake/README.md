@@ -1,4 +1,4 @@
-﻿# Library Intake UI
+# Library Intake UI
 
 Standalone intake app for building federated business-function library manifests.
 
@@ -10,9 +10,10 @@ Standalone intake app for building federated business-function library manifests
 4. Visual mapping mode with draggable library nodes and typed links
 5. In-app help cards with expected input, defaults, and examples per step
 6. Bank Starter preset for fast onboarding
-7. JSON export/import (`answers.json`, `manifest.json`)
-8. Revision save/load and approval workflow
-9. Retrieve latest approved libraries for easy reuse/linking
+7. Bank function templates (load or merge) for baseline generation
+8. JSON export/import (`answers.json`, `manifest.json`)
+9. Revision save/load and approval workflow
+10. Retrieve latest approved libraries and insert handoffs via approved-picker modal
 
 ## Run
 
@@ -44,6 +45,19 @@ Approved snapshots (repo-level):
 
 - `ops/federation/approved/approved-index.json`
 - `ops/federation/approved/<program-id>--rev-XXXX.json`
+
+## Template Storage
+
+Bank templates are file-backed JSON payloads in:
+
+- `apps/library-intake/templates/bank/*.json`
+
+API endpoints:
+
+- `GET /api/templates/bank`
+- `GET /api/templates/bank/:id`
+- `GET /api/approved/catalog`
+- `GET /api/approved/catalog?includeManifest=1`
 
 ## Manifest Scaffolding
 

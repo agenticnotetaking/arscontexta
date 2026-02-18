@@ -1,0 +1,21 @@
+{
+  "id": "lending-ops-core",
+  "title": "Lending Operations Core",
+  "description": "Baseline library for underwriting handoffs, booking, and exception lifecycle.",
+  "type": "library",
+  "tags": ["lending", "underwriting", "operations"],
+  "library": {
+    "id": "lending-ops",
+    "display_name": "Lending Operations",
+    "purpose": "Coordinate underwriting decisions, booking readiness, and post-booking exception routing.",
+    "decisions_supported": ["Request additional documentation", "Escalate policy exceptions"],
+    "inputs": ["loan-applications", "underwriting-guides", "servicing-events"],
+    "outputs": ["decision-notes", "exception-escalations", "booking-status"],
+    "owner_role": "lending-ops-manager",
+    "weekly_change_volume": "medium"
+  },
+  "shared_terms": {
+    "entities": ["application", "decision", "exception", "policy", "owner"],
+    "relationships": ["depends_on", "escalates_to", "measured_by"]
+  }
+}

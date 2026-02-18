@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -82,8 +82,27 @@
       <p class="explain">One card per function, such as Payments Ops or Fraud Ops.</p>
       <div class="row tools">
         <button id="btnAddLibrary">Add Library</button>
-        <button id="btnLoadApprovedLibraries">Load Latest Approved Libraries</button>
-        <button id="btnLoadApprovedWithLinks">Load Approved + Handoffs</button>
+        <button id="btnRefreshTemplates">Refresh Templates</button>
+      </div>
+      <div class="template-box">
+        <label>Bank template
+          <select id="templateSelect"></select>
+        </label>
+        <div class="row tools">
+          <button id="btnTemplateLoadMerge">Merge Template</button>
+          <button id="btnTemplateLoadReplace">Load Template (Replace)</button>
+        </div>
+        <p id="templateInfo" class="micro"></p>
+      </div>
+      <div class="row tools">
+        <button id="btnRefreshApprovedCatalogs">Refresh Approved Sets</button>
+      </div>
+      <label>Approved library set
+        <select id="approvedProgramSelect"></select>
+      </label>
+      <div class="row tools">
+        <button id="btnLoadApprovedLibraries">Load Selected Approved Libraries</button>
+        <button id="btnLoadApprovedWithLinks">Load Selected Approved + Handoffs</button>
       </div>
       <p id="approvedInfo" class="micro"></p>
       <div id="librariesContainer"></div>
@@ -105,7 +124,10 @@
     <section class="panel" id="panelHandoffs">
       <h3>Handoffs Between Teams</h3>
       <p class="explain">Capture where work, controls, or escalations cross boundaries.</p>
-      <button id="btnAddLink">Add Handoff</button>
+      <div class="row tools">
+        <button id="btnAddLink">Add Handoff</button>
+        <button id="btnAddLinkFromApproved">Insert Handoff from Approved Libraries</button>
+      </div>
       <div id="linksContainer"></div>
     </section>
 
@@ -195,5 +217,57 @@
   </main>
 
   <script src="./app.js"></script>
+
+  <div id="approvedLinkModal" class="modal hidden" aria-hidden="true">
+    <div id="approvedModalBackdrop" class="modal-backdrop"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="approvedModalTitle">
+      <h3 id="approvedModalTitle">Insert Handoff from Approved Libraries</h3>
+      <p class="explain">Pick an approved context set, then choose source and target libraries. If a selected library is not in your current draft, it will be added automatically.</p>
+      <label>Approved context set
+        <select id="approvedCatalogSelect"></select>
+      </label>
+      <div class="grid-2">
+        <label>From library
+          <select id="approvedSourceSelect"></select>
+        </label>
+        <label>To library
+          <select id="approvedTargetSelect"></select>
+        </label>
+      </div>
+      <div class="grid-2">
+        <label>Handoff type
+          <select id="approvedContractType">
+            <option>handoff</option>
+            <option>control</option>
+            <option>data</option>
+            <option>escalation</option>
+            <option>dependency</option>
+          </select>
+        </label>
+        <label>What moves?
+          <input id="approvedObject" type="text" placeholder="high-risk-payment-exception">
+        </label>
+      </div>
+      <label>Trigger event
+        <input id="approvedTriggerEvent" type="text" placeholder="exception.severity == critical">
+      </label>
+      <div class="grid-2">
+        <label>SLA target
+          <input id="approvedSlaTarget" type="text" placeholder="15m">
+        </label>
+        <label>Failure signal
+          <input id="approvedFailureSignal" type="text" placeholder="no_ack_within_sla">
+        </label>
+      </div>
+      <label>Required fields (comma-separated)
+        <input id="approvedRequiredFields" type="text" placeholder="exception_id,severity,owner_role">
+      </label>
+      <p id="approvedModalInfo" class="micro"></p>
+      <div class="row tools">
+        <button id="btnApprovedInsert" class="primary">Insert Handoff</button>
+        <button id="btnApprovedCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

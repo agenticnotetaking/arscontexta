@@ -1,0 +1,21 @@
+{
+  "id": "fraud-ops-core",
+  "title": "Fraud Operations Core",
+  "description": "Baseline library for alert triage, investigation, and fraud mitigation decisions.",
+  "type": "library",
+  "tags": ["fraud", "operations", "risk"],
+  "library": {
+    "id": "fraud-ops",
+    "display_name": "Fraud Operations",
+    "purpose": "Investigate suspicious behavior and coordinate account/transaction protections.",
+    "decisions_supported": ["Hold or release flagged transaction", "Escalate repeat pattern to controls"],
+    "inputs": ["alerts", "customer-signals", "policy-rules"],
+    "outputs": ["case-findings", "action-directives", "false-positive-feedback"],
+    "owner_role": "fraud-ops-manager",
+    "weekly_change_volume": "high"
+  },
+  "shared_terms": {
+    "entities": ["alert", "case", "rule", "risk", "control"],
+    "relationships": ["mitigates", "feeds", "owned_by"]
+  }
+}

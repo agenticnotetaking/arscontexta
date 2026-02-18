@@ -1,4 +1,4 @@
-﻿
+
 (function () {
   const steps = [
     {
@@ -149,6 +149,8 @@
     currentStep: 0,
     interviewIndex: 0,
     lastSavedRevision: "",
+    templateCatalog: [],
+    approvedCatalog: [],
     program: { name: "", id: "", owner_unit: "", target_outcome: "" },
     libraries: [],
     shared_terms: { entities: [], relationships: [] },
@@ -190,7 +192,16 @@
     helpDefault: byId("helpDefault"),
     helpSample: byId("helpSample"),
     helpPitfalls: byId("helpPitfalls"),
-    approvedInfo: byId("approvedInfo")
+    templateSelect: byId("templateSelect"),
+    templateInfo: byId("templateInfo"),
+    approvedInfo: byId("approvedInfo"),
+    approvedProgramSelect: byId("approvedProgramSelect"),
+    approvedLinkModal: byId("approvedLinkModal"),
+    approvedModalBackdrop: byId("approvedModalBackdrop"),
+    approvedCatalogSelect: byId("approvedCatalogSelect"),
+    approvedSourceSelect: byId("approvedSourceSelect"),
+    approvedTargetSelect: byId("approvedTargetSelect"),
+    approvedModalInfo: byId("approvedModalInfo")
   };
 
   init();
@@ -202,6 +213,8 @@
     ensureInitialLibrary();
     renderChips();
     renderAll();
+    loadTemplateList();
+    loadApprovedCatalogs(false);
   }
 
   function buildStepper() {
@@ -324,6 +337,13 @@
     byId("btnApplyBankStarter").addEventListener("click", applyBankStarter);
     byId("btnAddLibrary").addEventListener("click", addLibrary);
     byId("btnAddLink").addEventListener("click", addLink);
+    byId("btnAddLinkFromApproved").addEventListener("click", openApprovedModal);
+
+    byId("btnRefreshTemplates").addEventListener("click", loadTemplateList);
+    byId("btnTemplateLoadMerge").addEventListener("click", () => applySelectedTemplate("merge"));
+    byId("btnTemplateLoadReplace").addEventListener("click", () => applySelectedTemplate("replace"));
+
+    byId("btnRefreshApprovedCatalogs").addEventListener("click", () => loadApprovedCatalogs(false));
     byId("btnLoadApprovedLibraries").addEventListener("click", () => loadApproved(false));
     byId("btnLoadApprovedWithLinks").addEventListener("click", () => loadApproved(true));
 
@@ -343,6 +363,18 @@
     byId("btnInterviewNext").addEventListener("click", nextInterviewQuestion);
 
     byId("importJsonInput").addEventListener("change", importJson);
+
+    ui.templateSelect.addEventListener("change", renderTemplateInfo);
+
+    ui.approvedCatalogSelect.addEventListener("change", renderApprovedModalChoices);
+    ui.approvedModalBackdrop.addEventListener("click", closeApprovedModal);
+    byId("btnApprovedCancel").addEventListener("click", closeApprovedModal);
+    byId("btnApprovedInsert").addEventListener("click", insertApprovedModalLink);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !ui.approvedLinkModal.classList.contains("hidden")) {
+        closeApprovedModal();
+      }
+    });
   }
 
   function renderChips() {
@@ -956,30 +988,28 @@
   }
 
   async function loadApproved(includeLinks) {
-    const programId = state.program.id || toKebab(state.program.name) || "program";
-    try {
-      const resp = await fetch(`/api/approved/latest?programId=${encodeURIComponent(programId)}`);
-      const payload = await resp.json();
-      if (!resp.ok) throw new Error(payload.error || "load_approved_failed");
-      if (!payload.latest || !payload.latest.data || !payload.latest.data.manifest) {
-        setStatus("No approved libraries found for this program.");
-        return;
-      }
-
-      const manifest = payload.latest.data.manifest;
-      state.libraries = Array.isArray(manifest.libraries) ? manifest.libraries : state.libraries;
-      if (includeLinks) {
-        state.links = Array.isArray(manifest.contracts) ? manifest.contracts : state.links;
-      }
-      state.shared_terms = manifest.ontology || state.shared_terms;
-      hydrateDomFromState();
-      renderChips();
-      renderAll();
-      ui.approvedInfo.textContent = `Loaded approved ${payload.latest.revision} (${payload.latest.approved_at})`;
-      setStatus(includeLinks ? "Loaded approved libraries and handoffs." : "Loaded approved libraries.");
-    } catch (err) {
-      setStatus(`Could not load approved libraries: ${err.message}`);
+    let selected = getSelectedApprovedCatalog();
+    if (!selected || !selected.data || !selected.data.manifest) {
+      await loadApprovedCatalogs(true);
+      selected = getSelectedApprovedCatalog();
     }
+
+    if (!selected || !selected.data || !selected.data.manifest) {
+      setStatus("No approved libraries found for the selected set.");
+      return;
+    }
+
+    const manifest = selected.data.manifest;
+    state.libraries = Array.isArray(manifest.libraries) ? manifest.libraries : state.libraries;
+    if (includeLinks) {
+      state.links = Array.isArray(manifest.contracts) ? manifest.contracts : state.links;
+    }
+    state.shared_terms = manifest.ontology || state.shared_terms;
+    hydrateDomFromState();
+    renderChips();
+    renderAll();
+    ui.approvedInfo.textContent = `Loaded approved ${selected.program_id} ${selected.revision} (${selected.approved_at})`;
+    setStatus(includeLinks ? "Loaded approved libraries and handoffs." : "Loaded approved libraries.");
   }
 
   async function loadRevisionList() {
@@ -1069,6 +1099,420 @@
     reader.readAsText(file);
   }
 
+
+  async function loadTemplateList() {
+    try {
+      const resp = await fetch("/api/templates/bank");
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "template_list_failed");
+      state.templateCatalog = Array.isArray(payload.templates) ? payload.templates : [];
+      renderTemplateSelect();
+      if (state.templateCatalog.length) {
+        setStatus(`Loaded ${state.templateCatalog.length} template(s).`);
+      }
+    } catch (err) {
+      ui.templateSelect.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Templates unavailable";
+      ui.templateSelect.appendChild(opt);
+      ui.templateInfo.textContent = "";
+      setStatus(`Could not load templates: ${err.message}`);
+    }
+  }
+
+  function renderTemplateSelect() {
+    ui.templateSelect.innerHTML = "";
+    if (!state.templateCatalog.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No templates found";
+      ui.templateSelect.appendChild(opt);
+      ui.templateInfo.textContent = "";
+      return;
+    }
+
+    state.templateCatalog.forEach((tpl) => {
+      const opt = document.createElement("option");
+      opt.value = tpl.id;
+      opt.textContent = `${tpl.title} (${tpl.type === "pack" ? "Pack" : "Library"})`;
+      ui.templateSelect.appendChild(opt);
+    });
+    renderTemplateInfo();
+  }
+
+  function renderTemplateInfo() {
+    const selected = state.templateCatalog.find((x) => x.id === ui.templateSelect.value) || state.templateCatalog[0];
+    if (!selected) {
+      ui.templateInfo.textContent = "";
+      return;
+    }
+    if (ui.templateSelect.value !== selected.id) {
+      ui.templateSelect.value = selected.id;
+    }
+    const tags = Array.isArray(selected.tags) && selected.tags.length ? ` | tags: ${selected.tags.join(", ")}` : "";
+    ui.templateInfo.textContent = `${selected.description || "No description"}${tags}`;
+  }
+
+  async function applySelectedTemplate(mode) {
+    const templateId = ui.templateSelect.value;
+    if (!templateId) {
+      setStatus("Select a template first.");
+      return;
+    }
+
+    try {
+      const resp = await fetch(`/api/templates/bank/${encodeURIComponent(templateId)}`);
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "template_load_failed");
+      const template = payload.template || {};
+
+      if (template.type === "pack") {
+        applyPackTemplate(template.pack || {}, mode);
+      } else {
+        applyLibraryTemplate(template, mode);
+      }
+
+      hydrateDomFromState();
+      renderChips();
+      renderAll();
+      setStatus(`${mode === "replace" ? "Loaded" : "Merged"} template ${template.title || template.id}.`);
+    } catch (err) {
+      setStatus(`Could not apply template: ${err.message}`);
+    }
+  }
+
+  function applyLibraryTemplate(template, mode) {
+    const lib = normalizeLibrary(template.library || { id: template.id || "library" });
+    if (mode === "replace") {
+      state.libraries = [lib];
+      if (template.shared_terms) {
+        state.shared_terms = normalizeSharedTerms(template.shared_terms);
+      }
+      if (Array.isArray(template.links) && template.links.length) {
+        state.links = template.links.map((x) => normalizeLink(x));
+      }
+      return;
+    }
+
+    upsertLibrary(lib);
+    if (template.shared_terms) {
+      mergeSharedTerms(template.shared_terms);
+    }
+    if (Array.isArray(template.links)) {
+      mergeLinks(template.links);
+    }
+  }
+
+  function applyPackTemplate(pack, mode) {
+    const program = pack.program || {};
+    const libraries = Array.isArray(pack.libraries) ? pack.libraries.map((x) => normalizeLibrary(x)) : [];
+    const links = Array.isArray(pack.links) ? pack.links.map((x) => normalizeLink(x)) : [];
+    const terms = normalizeSharedTerms(pack.shared_terms || pack.ontology || {});
+
+    if (mode === "replace") {
+      state.program = {
+        name: program.name || state.program.name,
+        id: toKebab(program.id || state.program.id || program.name || ""),
+        owner_unit: program.owner_unit || state.program.owner_unit,
+        target_outcome: program.target_outcome || state.program.target_outcome
+      };
+      state.libraries = libraries.length ? libraries : state.libraries;
+      state.links = links;
+      state.shared_terms = terms;
+      if (pack.governance) {
+        state.governance = { ...state.governance, ...pack.governance };
+      }
+      return;
+    }
+
+    state.program.name = state.program.name || program.name || "";
+    state.program.id = state.program.id || toKebab(program.id || program.name || "");
+    state.program.owner_unit = state.program.owner_unit || program.owner_unit || "";
+    state.program.target_outcome = state.program.target_outcome || program.target_outcome || "";
+
+    libraries.forEach((lib) => upsertLibrary(lib));
+    mergeSharedTerms(terms);
+    mergeLinks(links);
+
+    if (pack.governance) {
+      Object.keys(pack.governance).forEach((key) => {
+        const current = state.governance[key];
+        if (current == null || current === "" || (Array.isArray(current) && !current.length)) {
+          state.governance[key] = pack.governance[key];
+        }
+      });
+    }
+  }
+
+  async function loadApprovedCatalogs(includeManifest) {
+    const suffix = includeManifest ? "?includeManifest=1" : "";
+    try {
+      const resp = await fetch(`/api/approved/catalog${suffix}`);
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "approved_catalog_failed");
+      state.approvedCatalog = Array.isArray(payload.items) ? payload.items : [];
+      renderApprovedProgramSelect();
+      return state.approvedCatalog;
+    } catch (err) {
+      ui.approvedProgramSelect.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No approved sets found";
+      ui.approvedProgramSelect.appendChild(opt);
+      ui.approvedInfo.textContent = "No approved libraries available yet.";
+      setStatus(`Could not load approved sets: ${err.message}`);
+      return [];
+    }
+  }
+
+  function renderApprovedProgramSelect() {
+    const previous = ui.approvedProgramSelect.value;
+    ui.approvedProgramSelect.innerHTML = "";
+
+    if (!state.approvedCatalog.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No approved sets found";
+      ui.approvedProgramSelect.appendChild(opt);
+      ui.approvedInfo.textContent = "No approved libraries available yet.";
+      return;
+    }
+
+    state.approvedCatalog.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.key;
+      opt.textContent = approvedEntryLabel(item);
+      ui.approvedProgramSelect.appendChild(opt);
+    });
+
+    if (previous && state.approvedCatalog.some((x) => x.key === previous)) {
+      ui.approvedProgramSelect.value = previous;
+    }
+
+    const selected = getSelectedApprovedCatalog();
+    if (selected) {
+      ui.approvedInfo.textContent = `Selected: ${approvedEntryLabel(selected)}`;
+    }
+  }
+
+  function getSelectedApprovedCatalog() {
+    const selectedKey = ui.approvedProgramSelect.value;
+    return state.approvedCatalog.find((item) => item.key === selectedKey) || state.approvedCatalog[0] || null;
+  }
+
+  function approvedEntryLabel(item) {
+    return `${item.program_id} | ${item.revision} | ${item.approved_at}`;
+  }
+
+  async function openApprovedModal() {
+    if (!state.approvedCatalog.length || !state.approvedCatalog[0].data) {
+      await loadApprovedCatalogs(true);
+    }
+    if (!state.approvedCatalog.length) {
+      setStatus("No approved sets available for linking yet.");
+      return;
+    }
+
+    renderApprovedModalCatalogSelect();
+    ui.approvedLinkModal.classList.remove("hidden");
+    ui.approvedLinkModal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeApprovedModal() {
+    ui.approvedLinkModal.classList.add("hidden");
+    ui.approvedLinkModal.setAttribute("aria-hidden", "true");
+  }
+
+  function renderApprovedModalCatalogSelect() {
+    const selectedMain = ui.approvedProgramSelect.value;
+    ui.approvedCatalogSelect.innerHTML = "";
+
+    state.approvedCatalog.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.key;
+      opt.textContent = approvedEntryLabel(item);
+      ui.approvedCatalogSelect.appendChild(opt);
+    });
+
+    if (selectedMain && state.approvedCatalog.some((item) => item.key === selectedMain)) {
+      ui.approvedCatalogSelect.value = selectedMain;
+    }
+
+    renderApprovedModalChoices();
+  }
+
+  function renderApprovedModalChoices() {
+    const selected = state.approvedCatalog.find((item) => item.key === ui.approvedCatalogSelect.value) || state.approvedCatalog[0];
+    if (!selected) return;
+
+    ui.approvedSourceSelect.innerHTML = "";
+    ui.approvedTargetSelect.innerHTML = "";
+
+    const libraries = Array.isArray(selected.data && selected.data.manifest && selected.data.manifest.libraries)
+      ? selected.data.manifest.libraries
+      : [];
+    const contracts = Array.isArray(selected.data && selected.data.manifest && selected.data.manifest.contracts)
+      ? selected.data.manifest.contracts
+      : [];
+
+    libraries.forEach((lib) => {
+      const sourceOpt = document.createElement("option");
+      sourceOpt.value = lib.id;
+      sourceOpt.textContent = `${lib.display_name || lib.id} (${lib.id})`;
+      ui.approvedSourceSelect.appendChild(sourceOpt);
+
+      const targetOpt = document.createElement("option");
+      targetOpt.value = lib.id;
+      targetOpt.textContent = `${lib.display_name || lib.id} (${lib.id})`;
+      ui.approvedTargetSelect.appendChild(targetOpt);
+    });
+
+    if (contracts.length) {
+      const first = contracts[0];
+      if (first.source_library) ui.approvedSourceSelect.value = first.source_library;
+      if (first.target_library) ui.approvedTargetSelect.value = first.target_library;
+      byId("approvedContractType").value = first.contract_type || "handoff";
+      byId("approvedObject").value = first.object || "";
+      byId("approvedTriggerEvent").value = first.trigger_event || "";
+      byId("approvedSlaTarget").value = first.sla_target || "";
+      byId("approvedFailureSignal").value = first.failure_signal || "";
+      byId("approvedRequiredFields").value = Array.isArray(first.required_fields) ? first.required_fields.join(",") : "";
+    } else {
+      byId("approvedContractType").value = "handoff";
+      byId("approvedObject").value = "";
+      byId("approvedTriggerEvent").value = "";
+      byId("approvedSlaTarget").value = "";
+      byId("approvedFailureSignal").value = "";
+      byId("approvedRequiredFields").value = "";
+    }
+
+    ui.approvedModalInfo.textContent = `Using approved ${selected.program_id} ${selected.revision} (${libraries.length} libraries).`;
+  }
+
+  function insertApprovedModalLink() {
+    const selected = state.approvedCatalog.find((item) => item.key === ui.approvedCatalogSelect.value);
+    if (!selected || !selected.data || !selected.data.manifest) {
+      setStatus("No approved set selected.");
+      return;
+    }
+
+    const sourceLibrary = ui.approvedSourceSelect.value;
+    const targetLibrary = ui.approvedTargetSelect.value;
+    if (!sourceLibrary || !targetLibrary) {
+      setStatus("Choose both source and target libraries.");
+      return;
+    }
+
+    const manifest = selected.data.manifest;
+    const libs = Array.isArray(manifest.libraries) ? manifest.libraries : [];
+    const byIdMap = Object.fromEntries(libs.map((lib) => [lib.id, lib]));
+
+    [sourceLibrary, targetLibrary].forEach((libId) => {
+      if (!state.libraries.some((lib) => lib.id === libId) && byIdMap[libId]) {
+        state.libraries.push(normalizeLibrary(byIdMap[libId]));
+      }
+    });
+
+    const link = normalizeLink({
+      source_library: sourceLibrary,
+      target_library: targetLibrary,
+      contract_type: byId("approvedContractType").value,
+      object: byId("approvedObject").value,
+      trigger_event: byId("approvedTriggerEvent").value,
+      sla_target: byId("approvedSlaTarget").value,
+      failure_signal: byId("approvedFailureSignal").value,
+      required_fields: splitCsv(byId("approvedRequiredFields").value)
+    });
+
+    if (!state.links.some((x) => linkKey(x) === linkKey(link))) {
+      state.links.push(link);
+    }
+
+    closeApprovedModal();
+    renderAll();
+    setStatus("Inserted handoff from approved libraries.");
+  }
+
+  function normalizeLibrary(lib) {
+    const id = toKebab(lib && lib.id ? lib.id : "library");
+    return {
+      id,
+      display_name: lib && lib.display_name ? lib.display_name : id,
+      purpose: lib && lib.purpose ? lib.purpose : "",
+      decisions_supported: Array.isArray(lib && lib.decisions_supported) ? lib.decisions_supported : [],
+      inputs: Array.isArray(lib && lib.inputs) ? lib.inputs : [],
+      outputs: Array.isArray(lib && lib.outputs) ? lib.outputs : [],
+      owner_role: lib && lib.owner_role ? lib.owner_role : "",
+      weekly_change_volume: lib && lib.weekly_change_volume ? lib.weekly_change_volume : "medium"
+    };
+  }
+
+  function normalizeLink(link) {
+    return {
+      source_library: link && link.source_library ? toKebab(link.source_library) : "",
+      target_library: link && link.target_library ? toKebab(link.target_library) : "",
+      contract_type: link && link.contract_type ? link.contract_type : "handoff",
+      object: link && link.object ? link.object : "",
+      trigger_event: link && link.trigger_event ? link.trigger_event : "",
+      sla_target: link && link.sla_target ? link.sla_target : "",
+      failure_signal: link && link.failure_signal ? link.failure_signal : "",
+      required_fields: Array.isArray(link && link.required_fields) ? link.required_fields : []
+    };
+  }
+
+  function normalizeSharedTerms(terms) {
+    return {
+      entities: uniqueStrings(Array.isArray(terms && terms.entities) ? terms.entities : []),
+      relationships: uniqueStrings(Array.isArray(terms && terms.relationships) ? terms.relationships : [])
+    };
+  }
+
+  function mergeSharedTerms(terms) {
+    const next = normalizeSharedTerms(terms);
+    state.shared_terms.entities = uniqueStrings([...(state.shared_terms.entities || []), ...next.entities]);
+    state.shared_terms.relationships = uniqueStrings([...(state.shared_terms.relationships || []), ...next.relationships]);
+  }
+
+  function upsertLibrary(lib) {
+    const idx = state.libraries.findIndex((x) => x.id === lib.id);
+    if (idx === -1) {
+      state.libraries.push(lib);
+      return;
+    }
+    const current = state.libraries[idx];
+    state.libraries[idx] = {
+      ...current,
+      ...lib,
+      decisions_supported: uniqueStrings([...(current.decisions_supported || []), ...(lib.decisions_supported || [])]),
+      inputs: uniqueStrings([...(current.inputs || []), ...(lib.inputs || [])]),
+      outputs: uniqueStrings([...(current.outputs || []), ...(lib.outputs || [])])
+    };
+  }
+
+  function mergeLinks(links) {
+    const existing = new Set(state.links.map((x) => linkKey(x)));
+    links.map((x) => normalizeLink(x)).forEach((link) => {
+      const key = linkKey(link);
+      if (!existing.has(key)) {
+        state.links.push(link);
+        existing.add(key);
+      }
+    });
+  }
+
+  function linkKey(link) {
+    return [
+      link.source_library || "",
+      link.target_library || "",
+      link.contract_type || "",
+      String(link.object || "").trim().toLowerCase()
+    ].join("::");
+  }
+
+  function uniqueStrings(values) {
+    return Array.from(new Set((values || []).map((x) => String(x || "").trim()).filter(Boolean)));
+  }
   function downloadJson(filename, data) {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
