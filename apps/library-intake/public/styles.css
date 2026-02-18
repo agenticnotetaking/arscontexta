@@ -7,6 +7,7 @@
   --accent: #0f7e6f;
   --accent-strong: #0a6157;
   --accent-soft: #dff4ef;
+  --warn-bg: #fff8eb;
 }
 
 * {
@@ -51,7 +52,7 @@ body {
 }
 
 .hero-actions {
-  min-width: 220px;
+  min-width: 260px;
   display: grid;
   gap: 8px;
 }
@@ -62,12 +63,14 @@ body {
   padding: 0 18px 30px;
 }
 
-.progress-wrap {
+.progress-wrap,
+.help-panel,
+.panel {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .progress-head {
@@ -77,9 +80,9 @@ body {
   gap: 16px;
 }
 
-.progress-head h2 {
+.progress-head h2,
+.help-panel h3 {
   margin: 0;
-  font-size: 20px;
 }
 
 .progress-head p {
@@ -127,13 +130,37 @@ body {
   border-color: #a8d9cf;
 }
 
+.help-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.help-block {
+  border: 1px solid #e6e0d0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+.help-block.warn {
+  background: var(--warn-bg);
+  border-color: #ebd7b0;
+}
+
+.help-block strong {
+  color: #29474f;
+}
+
+.help-block ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
 .panel {
   display: none;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
-  background: var(--paper);
-  margin-bottom: 12px;
 }
 
 .panel.active {
@@ -146,7 +173,7 @@ body {
 
 .explain {
   color: var(--muted);
-  margin-top: -2px;
+  margin-top: 6px;
 }
 
 .grid-2 {
@@ -290,10 +317,20 @@ pre {
   padding: 10px;
 }
 
-#status {
+#status,
+.micro {
   color: var(--muted);
-  text-align: center;
   font-size: 13px;
+}
+
+#status {
+  text-align: center;
+}
+
+summary {
+  cursor: pointer;
+  color: #37545a;
+  font-weight: 600;
 }
 
 @media (max-width: 900px) {
@@ -305,7 +342,8 @@ pre {
     margin-top: 10px;
   }
 
-  .grid-2 {
+  .grid-2,
+  .help-grid {
     grid-template-columns: 1fr;
   }
 
@@ -317,35 +355,3 @@ pre {
     grid-template-columns: 1fr;
   }
 }
-
-.help-panel {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px;
-  background: #fffdf8;
-  margin-bottom: 12px;
-}
-
-.help-panel h3 {
-  margin: 0 0 8px;
-}
-
-.help-block {
-  border: 1px solid #e6e0d0;
-  border-radius: 10px;
-  padding: 10px;
-  margin-top: 8px;
-  background: #fff;
-}
-
-.help-block p {
-  margin: 6px 0 0;
-  color: var(--muted);
-}
-
-summary {
-  cursor: pointer;
-  color: #37545a;
-  font-weight: 600;
-}
-

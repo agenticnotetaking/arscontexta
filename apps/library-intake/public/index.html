@@ -11,7 +11,7 @@
     <div class="hero-copy">
       <p class="eyebrow">Ars Contexta</p>
       <h1>Build Your Business Context Libraries</h1>
-      <p>Answer a few plain-language questions. We will turn your answers into a versioned JSON manifest for baseline library generation.</p>
+      <p>Answer plain-language prompts and generate a versioned manifest for baseline library creation.</p>
     </div>
     <div class="hero-actions">
       <button id="btnApplyBankStarter">Use Bank Starter</button>
@@ -33,22 +33,29 @@
     <section class="help-panel">
       <h3>Help and Examples</h3>
       <p id="helpIntro" class="explain"></p>
-      <div class="help-block">
-        <strong>What to enter</strong>
-        <p id="helpExpected"></p>
-      </div>
-      <div class="help-block">
-        <strong>Good default</strong>
-        <p id="helpDefault"></p>
-      </div>
-      <div class="help-block">
-        <strong>Sample answer</strong>
-        <p id="helpSample"></p>
+      <div class="help-grid">
+        <div class="help-block">
+          <strong>What to enter</strong>
+          <ul id="helpExpected"></ul>
+        </div>
+        <div class="help-block">
+          <strong>Good defaults</strong>
+          <ul id="helpDefault"></ul>
+        </div>
+        <div class="help-block">
+          <strong>Sample answers</strong>
+          <ul id="helpSample"></ul>
+        </div>
+        <div class="help-block warn">
+          <strong>Common mistakes</strong>
+          <ul id="helpPitfalls"></ul>
+        </div>
       </div>
     </section>
+
     <section class="panel" id="panelProgram">
       <h3>Program Basics</h3>
-      <p class="explain">This gives your workspace a stable identity and owner.</p>
+      <p class="explain">Define the owner, identity, and business outcome for this graph.</p>
       <div class="grid-2">
         <label>Program name<input id="programName" type="text" placeholder="Bank Business Function Meta-Graph"></label>
         <label>Program ID<input id="programId" type="text" placeholder="bank-context-graph"></label>
@@ -59,10 +66,8 @@
 
     <section class="panel" id="panelInterview">
       <h3>Guided Interview (Optional)</h3>
-      <p class="explain">Prefer to talk it through? Answer one prompt at a time and we will fill the form for you.</p>
-      <div class="prompt-box">
-        <p id="interviewPrompt"></p>
-      </div>
+      <p class="explain">If this is easier for stakeholders, answer prompts and auto-fill the form.</p>
+      <div class="prompt-box"><p id="interviewPrompt"></p></div>
       <label>Your answer
         <textarea id="interviewAnswer" rows="4" placeholder="Type your answer in plain language..."></textarea>
       </label>
@@ -74,14 +79,19 @@
 
     <section class="panel" id="panelLibraries">
       <h3>Libraries (Business Functions)</h3>
-      <p class="explain">Create one card per function, like Payments Ops or Fraud Ops.</p>
-      <button id="btnAddLibrary">Add Library</button>
+      <p class="explain">One card per function, such as Payments Ops or Fraud Ops.</p>
+      <div class="row tools">
+        <button id="btnAddLibrary">Add Library</button>
+        <button id="btnLoadApprovedLibraries">Load Latest Approved Libraries</button>
+        <button id="btnLoadApprovedWithLinks">Load Approved + Handoffs</button>
+      </div>
+      <p id="approvedInfo" class="micro"></p>
       <div id="librariesContainer"></div>
     </section>
 
     <section class="panel" id="panelTerms">
       <h3>Shared Business Terms</h3>
-      <p class="explain">Use terms everyone understands the same way across teams.</p>
+      <p class="explain">Use the same words across teams for consistent linking.</p>
       <div class="chips" id="entityChips"></div>
       <label>Shared entities (comma-separated)
         <input id="sharedEntities" type="text" placeholder="process, control, risk, metric, exception">
@@ -94,14 +104,14 @@
 
     <section class="panel" id="panelHandoffs">
       <h3>Handoffs Between Teams</h3>
-      <p class="explain">Describe where work or decisions move between libraries.</p>
+      <p class="explain">Capture where work, controls, or escalations cross boundaries.</p>
       <button id="btnAddLink">Add Handoff</button>
       <div id="linksContainer"></div>
     </section>
 
     <section class="panel" id="panelArtifact">
       <h3>AI Draft from Documents (Optional)</h3>
-      <p class="explain">Paste SOPs, runbooks, or incident summaries. AI can suggest libraries and handoffs. You decide what to apply.</p>
+      <p class="explain">Paste SOPs, runbooks, or incident summaries. Apply only suggestions you trust.</p>
       <label>Artifact text
         <textarea id="artifactText" rows="8" placeholder="Paste source text here..."></textarea>
       </label>
@@ -114,7 +124,7 @@
 
     <section class="panel" id="panelMap">
       <h3>Visual Library Map</h3>
-      <p class="explain">Drag the cards to make the map readable for stakeholders.</p>
+      <p class="explain">Drag cards so cross-functional flows are easy to read.</p>
       <div class="map-wrap">
         <svg id="mapSvg"></svg>
         <div id="mapBoard"></div>
@@ -123,7 +133,7 @@
 
     <section class="panel" id="panelGovernance">
       <h3>Governance & Controls</h3>
-      <p class="explain">Set minimum controls for consistency and compliance.</p>
+      <p class="explain">Set baseline compliance, cadence, and provenance requirements.</p>
       <div class="grid-2">
         <label>Data classification baseline
           <select id="classificationBaseline">
@@ -157,7 +167,7 @@
 
     <section class="panel" id="panelReview">
       <h3>Review, Versioning, and Export</h3>
-      <p class="explain">Review your manifest and manage revision history.</p>
+      <p class="explain">Save revisions, approve a revision, then export JSON for generation.</p>
       <div class="row tools">
         <button id="btnExportAnswers">Download answers.json</button>
         <button id="btnExportManifest2" class="primary">Download manifest.json</button>
@@ -169,6 +179,10 @@
         <button id="btnLoadRevisions">Refresh Revisions</button>
         <select id="revisionSelect"></select>
         <button id="btnLoadRevision">Load Selected Revision</button>
+      </div>
+      <div class="row tools">
+        <input id="approvedBy" type="text" placeholder="Approved by (role or name)">
+        <button id="btnApproveCurrent">Mark Revision as Approved</button>
       </div>
       <pre id="manifestPreview"></pre>
     </section>
@@ -183,5 +197,3 @@
   <script src="./app.js"></script>
 </body>
 </html>
-
-

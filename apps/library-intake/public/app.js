@@ -1,15 +1,135 @@
 ﻿
 (function () {
   const steps = [
-    { id: "panelProgram", title: "Program basics", hint: "Name the program and define who owns it." },
-    { id: "panelInterview", title: "Guided interview", hint: "Optional: answer prompts and auto-fill the form." },
-    { id: "panelLibraries", title: "Libraries", hint: "Define each business function as a library." },
-    { id: "panelTerms", title: "Shared terms", hint: "Set common language across teams." },
-    { id: "panelHandoffs", title: "Handoffs", hint: "Describe how work moves between libraries." },
-    { id: "panelArtifact", title: "AI drafting", hint: "Optional: draft suggestions from source documents." },
-    { id: "panelMap", title: "Visual map", hint: "Arrange the map for stakeholder readability." },
-    { id: "panelGovernance", title: "Governance", hint: "Set baseline controls and compliance defaults." },
-    { id: "panelReview", title: "Review & export", hint: "Inspect final output and manage revisions." }
+    {
+      id: "panelProgram",
+      title: "Program basics",
+      hint: "Name the program and define who owns it.",
+      help: {
+        intro: "Start with ownership and one clear business outcome.",
+        expected: [
+          "Program name used by stakeholders",
+          "Program ID (auto-generated or short kebab-case)",
+          "Owner team or function",
+          "Outcome stated as a measurable improvement"
+        ],
+        defaults: [
+          "Owner team: Operations Excellence",
+          "Program ID style: bank-context-graph"
+        ],
+        sample: [
+          "Outcome: Reduce payment exception resolution time by 30%"
+        ],
+        pitfalls: [
+          "Do not use vague outcomes like 'improve process'",
+          "Avoid changing Program ID frequently"
+        ]
+      }
+    },
+    {
+      id: "panelInterview",
+      title: "Guided interview",
+      hint: "Optional: answer prompts and auto-fill the form.",
+      help: {
+        intro: "Use this mode for non-technical contributors.",
+        expected: ["One short sentence per prompt"],
+        defaults: ["Use plain business language"],
+        sample: ["We need shared context for Payments Ops, Fraud Ops, and Lending Ops"],
+        pitfalls: ["Long multi-topic answers are harder to map cleanly"]
+      }
+    },
+    {
+      id: "panelLibraries",
+      title: "Libraries",
+      hint: "Define each business function as a library.",
+      help: {
+        intro: "Each library should map to one operational function.",
+        expected: [
+          "Library ID and display name",
+          "Purpose statement",
+          "Owner role"
+        ],
+        defaults: ["Start with 3-5 libraries"],
+        sample: ["payments-ops: Execute payments and handle exceptions"],
+        pitfalls: ["Do not mix unrelated functions in one library"]
+      }
+    },
+    {
+      id: "panelTerms",
+      title: "Shared terms",
+      hint: "Set common language across teams.",
+      help: {
+        intro: "Shared terms keep cross-team links consistent.",
+        expected: ["Entity terms and relationship terms"],
+        defaults: ["Entities: process, control, risk, metric, exception"],
+        sample: ["Relationships: depends_on, owned_by, mitigates, measured_by"],
+        pitfalls: ["Avoid synonyms for the same concept across libraries"]
+      }
+    },
+    {
+      id: "panelHandoffs",
+      title: "Handoffs",
+      hint: "Describe how work moves between libraries.",
+      help: {
+        intro: "Capture the most important cross-function transfers first.",
+        expected: ["Source, target, handoff object, type"],
+        defaults: ["Use type = handoff unless a specific control flow exists"],
+        sample: ["payments-ops -> fraud-ops: high-risk-payment-exception"],
+        pitfalls: ["Do not leave object empty; that makes links hard to use"]
+      }
+    },
+    {
+      id: "panelArtifact",
+      title: "AI drafting",
+      hint: "Optional: draft suggestions from source documents.",
+      help: {
+        intro: "Use AI to accelerate first drafts, then review carefully.",
+        expected: ["SOP, runbook, incident, or policy text"],
+        defaults: ["Apply suggestions selectively"],
+        sample: ["Paste exception SOP to draft handoffs automatically"],
+        pitfalls: ["Never accept AI output without validation"]
+      }
+    },
+    {
+      id: "panelMap",
+      title: "Visual map",
+      hint: "Arrange the map for stakeholder readability.",
+      help: {
+        intro: "The map is for communication, not just storage.",
+        expected: ["Drag nodes into a clear flow layout"],
+        defaults: ["Keep high-volume hubs near center"],
+        sample: ["Payments centered with Fraud and Risk adjacent"],
+        pitfalls: ["Avoid crossing lines when possible"]
+      }
+    },
+    {
+      id: "panelGovernance",
+      title: "Governance",
+      hint: "Set baseline controls and compliance defaults.",
+      help: {
+        intro: "Define minimum compliance settings once.",
+        expected: ["Classification, cadence, retention, provenance"],
+        defaults: [
+          "Classification: confidential",
+          "Review cadence: monthly",
+          "Retention: 36 months"
+        ],
+        sample: ["Required provenance: source_ref,captured_at,owner_role,confidence"],
+        pitfalls: ["Do not skip provenance fields if auditability matters"]
+      }
+    },
+    {
+      id: "panelReview",
+      title: "Review & export",
+      hint: "Inspect final output and manage revisions.",
+      help: {
+        intro: "Finalize with revision control before downstream generation.",
+        expected: ["Save revision, optionally approve, then export"],
+        defaults: ["Approve only reviewed revisions"],
+        sample: ["Approve rev-0004, then export manifest.json"],
+        pitfalls: ["Avoid approving unsaved or unreviewed drafts"]
+      }
+    }
   ];
 
   const interviewQuestions = [
@@ -24,66 +144,11 @@
 
   const recommendedEntityChips = ["process", "control", "risk", "metric", "policy", "exception", "system", "role"];
   const recommendedRelationshipChips = ["depends_on", "owned_by", "mitigates", "measured_by", "escalates_to", "feeds"];
-  const helpByStep = {
-    panelProgram: {
-      intro: "Start simple: define who owns this effort and what success looks like.",
-      expected: "Program name, owner team, and one measurable outcome.",
-      def: "Owner team = Operations Excellence",
-      sample: "Reduce payment exception resolution time by 30%."
-    },
-    panelInterview: {
-      intro: "Use this if stakeholders prefer answering prompts instead of forms.",
-      expected: "Short plain-language answers.",
-      def: "One sentence per prompt is enough.",
-      sample: "We need shared context across Payments Ops, Fraud Ops, and Lending Ops."
-    },
-    panelLibraries: {
-      intro: "Each library should represent one business function.",
-      expected: "Name, purpose, and owner role for each function.",
-      def: "Start with 3-5 libraries only.",
-      sample: "payments-ops: handles payment execution and exception triage."
-    },
-    panelTerms: {
-      intro: "Shared terms avoid confusion across teams.",
-      expected: "Common entities and relationship words used in every library.",
-      def: "Entities: process, control, risk, metric, exception",
-      sample: "Relationships: depends_on, owned_by, mitigates, measured_by"
-    },
-    panelHandoffs: {
-      intro: "Capture where work crosses team boundaries.",
-      expected: "From team, to team, and what object is handed off.",
-      def: "Use contract type = handoff unless there is a control-specific flow.",
-      sample: "payments-ops -> fraud-ops | object: high-risk payment exception"
-    },
-    panelArtifact: {
-      intro: "Paste SOPs/runbooks to draft suggestions quickly.",
-      expected: "Readable policy, SOP, or incident text.",
-      def: "Review suggestions before applying.",
-      sample: "Paste an exception management SOP to auto-suggest handoffs."
-    },
-    panelMap: {
-      intro: "Use this view to communicate structure to stakeholders.",
-      expected: "Drag cards so linked teams sit near each other.",
-      def: "Put high-volume teams near center.",
-      sample: "Payments in center, Fraud and Risk adjacent."
-    },
-    panelGovernance: {
-      intro: "Set baseline controls for consistency and auditability.",
-      expected: "Classification, cadence, retention, and provenance fields.",
-      def: "Classification: confidential | Review: monthly | Retention: 36 months",
-      sample: "Required provenance: source_ref,captured_at,owner_role,confidence"
-    },
-    panelReview: {
-      intro: "Validate output before saving and sharing.",
-      expected: "Review manifest preview, save revision, export JSON.",
-      def: "Save a revision before every major change.",
-      sample: "Export manifest.json for baseline generation."
-    }
-  };
 
   const state = {
     currentStep: 0,
     interviewIndex: 0,
+    lastSavedRevision: "",
     program: { name: "", id: "", owner_unit: "", target_outcome: "" },
     libraries: [],
     shared_terms: { entities: [], relationships: [] },
@@ -123,7 +188,9 @@
     helpIntro: byId("helpIntro"),
     helpExpected: byId("helpExpected"),
     helpDefault: byId("helpDefault"),
-    helpSample: byId("helpSample")
+    helpSample: byId("helpSample"),
+    helpPitfalls: byId("helpPitfalls"),
+    approvedInfo: byId("approvedInfo")
   };
 
   init();
@@ -132,8 +199,8 @@
     buildStepper();
     wireInputs();
     bindButtons();
-    renderChips();
     ensureInitialLibrary();
+    renderChips();
     renderAll();
   }
 
@@ -159,18 +226,29 @@
     ui.stepTitle.textContent = `Step ${current + 1} of ${total}: ${step.title}`;
     ui.stepHint.textContent = step.hint;
     ui.progressBar.style.width = `${((current + 1) / total) * 100}%`;
-    renderHelp(step.id);
+    renderHelp(step.help);
 
     steps.forEach((s, idx) => {
       const panel = byId(s.id);
-      if (!panel) return;
-      panel.classList.toggle("active", idx === current);
-      const stepBtn = ui.stepper.querySelectorAll("button")[idx];
-      if (stepBtn) stepBtn.classList.toggle("active", idx === current);
+      if (panel) panel.classList.toggle("active", idx === current);
+      const btn = ui.stepper.querySelectorAll("button")[idx];
+      if (btn) btn.classList.toggle("active", idx === current);
     });
 
     ui.btnPrevStep.disabled = current === 0;
     ui.btnNextStep.textContent = current === total - 1 ? "Finish" : "Next";
+  }
+
+  function renderHelp(help) {
+    ui.helpIntro.textContent = help.intro;
+    setList(ui.helpExpected, help.expected);
+    setList(ui.helpDefault, help.defaults);
+    setList(ui.helpSample, help.sample);
+    setList(ui.helpPitfalls, help.pitfalls);
+  }
+
+  function setList(target, items) {
+    target.innerHTML = (items || []).map((x) => `<li>${escape(x)}</li>`).join("");
   }
 
   function wireInputs() {
@@ -226,6 +304,7 @@
       renderManifest();
     });
   }
+
   function bindButtons() {
     ui.btnPrevStep.addEventListener("click", () => {
       if (state.currentStep > 0) {
@@ -245,6 +324,8 @@
     byId("btnApplyBankStarter").addEventListener("click", applyBankStarter);
     byId("btnAddLibrary").addEventListener("click", addLibrary);
     byId("btnAddLink").addEventListener("click", addLink);
+    byId("btnLoadApprovedLibraries").addEventListener("click", () => loadApproved(false));
+    byId("btnLoadApprovedWithLinks").addEventListener("click", () => loadApproved(true));
 
     byId("btnExportAnswers").addEventListener("click", () => downloadJson("answers.json", buildAnswers()));
     byId("btnExportManifest").addEventListener("click", () => downloadJson("manifest.json", buildManifest()));
@@ -253,6 +334,7 @@
     byId("btnSaveRevision").addEventListener("click", saveRevision);
     byId("btnLoadRevisions").addEventListener("click", loadRevisionList);
     byId("btnLoadRevision").addEventListener("click", loadRevision);
+    byId("btnApproveCurrent").addEventListener("click", approveCurrentRevision);
 
     byId("btnSuggestFromArtifact").addEventListener("click", requestArtifactSuggestions);
     byId("artifactFileInput").addEventListener("change", readArtifactFile);
@@ -401,7 +483,6 @@
       });
     });
   }
-
   function renderLinks() {
     ui.linksContainer.innerHTML = "";
     state.links.forEach((link, idx) => {
@@ -454,6 +535,7 @@
       });
     });
   }
+
   function renderMap() {
     ui.mapBoard.innerHTML = "";
     ui.mapSvg.innerHTML = "";
@@ -626,7 +708,6 @@
     state.interviewIndex = (state.interviewIndex + 1) % interviewQuestions.length;
     renderInterview();
   }
-
   function applyInterviewAnswer() {
     const q = interviewQuestions[state.interviewIndex];
     const answer = ui.interviewAnswer.value.trim();
@@ -688,19 +769,6 @@
     ui.interviewPrompt.textContent = interviewQuestions[state.interviewIndex].prompt;
   }
 
-  function renderHelp(stepId) {
-    const help = helpByStep[stepId] || {
-      intro: "Fill in the fields for this step.",
-      expected: "Required values",
-      def: "Use your current process defaults",
-      sample: "Use clear, concrete wording"
-    };
-    ui.helpIntro.textContent = help.intro;
-    ui.helpExpected.textContent = help.expected;
-    ui.helpDefault.textContent = help.def;
-    ui.helpSample.textContent = help.sample;
-  }
-
   function applyBankStarter() {
     state.program = {
       name: "Bank Business Function Meta-Graph",
@@ -732,7 +800,7 @@
       {
         id: "lending-ops",
         display_name: "Lending Operations",
-        purpose: "Coordinate underwriting and post-booking operational controls.",
+        purpose: "Coordinate underwriting and post-booking controls.",
         decisions_supported: ["When to request additional underwriting documentation"],
         inputs: ["loan-files", "underwriting-guides"],
         outputs: ["loan-decision-notes", "exception-escalations"],
@@ -766,30 +834,27 @@
         required_fields: ["application_id", "indicator_score", "owner_role"]
       }
     ];
-    state.governance = {
-      classification_baseline: "confidential",
-      review_cadence: "monthly",
-      retention_months: 36,
-      change_approval: "dual-approver",
-      required_provenance_fields: ["source_ref", "captured_at", "owner_role", "confidence", "effective_from"]
-    };
 
-    byId("programName").value = state.program.name;
-    byId("programId").value = state.program.id;
-    byId("ownerUnit").value = state.program.owner_unit;
-    byId("targetOutcome").value = state.program.target_outcome;
-    ui.sharedEntities.value = state.shared_terms.entities.join(", ");
-    ui.sharedRelationships.value = state.shared_terms.relationships.join(", ");
-    byId("classificationBaseline").value = state.governance.classification_baseline;
-    byId("reviewCadence").value = state.governance.review_cadence;
-    byId("retentionMonths").value = state.governance.retention_months;
-    byId("changeApproval").value = state.governance.change_approval;
-    byId("provenanceFields").value = state.governance.required_provenance_fields.join(",");
-
+    hydrateDomFromState();
     renderChips();
     renderAll();
     setStatus("Bank starter applied. Review each step and adjust for your team.");
   }
+
+  function hydrateDomFromState() {
+    byId("programName").value = state.program.name || "";
+    byId("programId").value = state.program.id || "";
+    byId("ownerUnit").value = state.program.owner_unit || "";
+    byId("targetOutcome").value = state.program.target_outcome || "";
+    ui.sharedEntities.value = (state.shared_terms.entities || []).join(", ");
+    ui.sharedRelationships.value = (state.shared_terms.relationships || []).join(", ");
+    byId("classificationBaseline").value = state.governance.classification_baseline || "confidential";
+    byId("reviewCadence").value = state.governance.review_cadence || "monthly";
+    byId("retentionMonths").value = state.governance.retention_months || 36;
+    byId("changeApproval").value = state.governance.change_approval || "dual-approver";
+    byId("provenanceFields").value = (state.governance.required_provenance_fields || []).join(",");
+  }
+
   function buildAnswers() {
     return {
       schema_version: "1.0",
@@ -822,20 +887,8 @@
         retention_months: state.governance.retention_months
       },
       governance: state.governance,
-      libraries: state.libraries.map((l) => ({
-        id: l.id,
-        display_name: l.display_name,
-        purpose: l.purpose,
-        owner_role: l.owner_role,
-        weekly_change_volume: l.weekly_change_volume,
-        decisions_supported: l.decisions_supported,
-        inputs: l.inputs,
-        outputs: l.outputs
-      })),
-      ontology: {
-        entities: state.shared_terms.entities,
-        relationships: state.shared_terms.relationships
-      },
+      libraries: state.libraries,
+      ontology: state.shared_terms,
       contracts: state.links
     };
   }
@@ -853,16 +906,6 @@
     renderManifest();
   }
 
-  function downloadJson(filename, data) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   async function saveRevision() {
     const programId = state.program.id || toKebab(state.program.name) || "program";
     try {
@@ -873,10 +916,69 @@
       });
       const payload = await resp.json();
       if (!resp.ok) throw new Error(payload.error || "save_failed");
+      state.lastSavedRevision = payload.revision;
       setStatus(`Saved revision ${payload.revision}.`);
       await loadRevisionList();
     } catch (err) {
       setStatus(`Save failed: ${err.message}`);
+    }
+  }
+
+  async function approveCurrentRevision() {
+    const programId = state.program.id || toKebab(state.program.name) || "program";
+    let revision = ui.revisionSelect.value || state.lastSavedRevision;
+    if (!revision) {
+      await saveRevision();
+      revision = state.lastSavedRevision;
+    }
+    if (!revision) {
+      setStatus("No revision available to approve.");
+      return;
+    }
+
+    try {
+      const resp = await fetch("/api/revisions/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          programId,
+          revision,
+          approvedBy: byId("approvedBy").value || "local-review"
+        })
+      });
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "approve_failed");
+      ui.approvedInfo.textContent = `Approved: ${payload.latest.program_id} ${payload.latest.revision} (${payload.latest.approved_at})`;
+      setStatus(`Approved ${revision}. Latest approved is now available for retrieval.`);
+    } catch (err) {
+      setStatus(`Approval failed: ${err.message}`);
+    }
+  }
+
+  async function loadApproved(includeLinks) {
+    const programId = state.program.id || toKebab(state.program.name) || "program";
+    try {
+      const resp = await fetch(`/api/approved/latest?programId=${encodeURIComponent(programId)}`);
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "load_approved_failed");
+      if (!payload.latest || !payload.latest.data || !payload.latest.data.manifest) {
+        setStatus("No approved libraries found for this program.");
+        return;
+      }
+
+      const manifest = payload.latest.data.manifest;
+      state.libraries = Array.isArray(manifest.libraries) ? manifest.libraries : state.libraries;
+      if (includeLinks) {
+        state.links = Array.isArray(manifest.contracts) ? manifest.contracts : state.links;
+      }
+      state.shared_terms = manifest.ontology || state.shared_terms;
+      hydrateDomFromState();
+      renderChips();
+      renderAll();
+      ui.approvedInfo.textContent = `Loaded approved ${payload.latest.revision} (${payload.latest.approved_at})`;
+      setStatus(includeLinks ? "Loaded approved libraries and handoffs." : "Loaded approved libraries.");
+    } catch (err) {
+      setStatus(`Could not load approved libraries: ${err.message}`);
     }
   }
 
@@ -898,7 +1000,6 @@
     const programId = state.program.id || toKebab(state.program.name) || "program";
     const rev = ui.revisionSelect.value;
     if (!rev) return;
-
     const resp = await fetch(`/api/revisions/${encodeURIComponent(programId)}/${encodeURIComponent(rev)}`);
     if (!resp.ok) {
       setStatus("Could not load selected revision.");
@@ -906,6 +1007,7 @@
     }
     const payload = await resp.json();
     hydrateFromAnswers(payload.answers || {});
+    state.lastSavedRevision = rev;
     setStatus(`Loaded revision ${rev}.`);
   }
 
@@ -915,21 +1017,7 @@
     state.shared_terms = answers.shared_terms || state.shared_terms;
     state.links = Array.isArray(answers.links) ? answers.links : state.links;
     state.governance = answers.governance || state.governance;
-
-    byId("programName").value = state.program.name || "";
-    byId("programId").value = state.program.id || "";
-    byId("ownerUnit").value = state.program.owner_unit || "";
-    byId("targetOutcome").value = state.program.target_outcome || "";
-
-    ui.sharedEntities.value = (state.shared_terms.entities || []).join(", ");
-    ui.sharedRelationships.value = (state.shared_terms.relationships || []).join(", ");
-
-    byId("classificationBaseline").value = state.governance.classification_baseline || "confidential";
-    byId("reviewCadence").value = state.governance.review_cadence || "monthly";
-    byId("retentionMonths").value = state.governance.retention_months || 36;
-    byId("changeApproval").value = state.governance.change_approval || "dual-approver";
-    byId("provenanceFields").value = (state.governance.required_provenance_fields || []).join(",");
-
+    hydrateDomFromState();
     renderChips();
     renderAll();
   }
@@ -953,12 +1041,7 @@
         }
         if (parsed.program_id && parsed.libraries) {
           hydrateFromAnswers({
-            program: {
-              id: parsed.program_id,
-              name: parsed.program && parsed.program.name ? parsed.program.name : "",
-              owner_unit: parsed.program && parsed.program.owner_unit ? parsed.program.owner_unit : "",
-              target_outcome: parsed.program && parsed.program.target_outcome ? parsed.program.target_outcome : ""
-            },
+            program: parsed.program || {},
             libraries: parsed.libraries,
             shared_terms: parsed.ontology || { entities: [], relationships: [] },
             links: parsed.contracts || [],
@@ -986,6 +1069,16 @@
     reader.readAsText(file);
   }
 
+  function downloadJson(filename, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function byId(id) {
     return document.getElementById(id);
   }
@@ -1006,4 +1099,3 @@
     ui.status.textContent = message;
   }
 })();
-

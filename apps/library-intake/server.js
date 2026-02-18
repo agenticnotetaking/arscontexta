@@ -6,6 +6,9 @@ const port = Number(process.env.PORT || 5077);
 const openAiModel = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const openAiKey = process.env.OPENAI_API_KEY || "";
 const publicRoot = path.join(__dirname, "public");
+const repoRoot = path.resolve(__dirname, "..", "..");
+const approvedDir = path.join(repoRoot, "ops", "federation", "approved");
+const approvedIndexPath = path.join(approvedDir, "approved-index.json");
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -30,6 +33,19 @@ function nextRevisionName(existingFiles) {
     .map((m) => Number(m[1]));
   const next = (revs.length ? Math.max(...revs) : 0) + 1;
   return `rev-${String(next).padStart(4, "0")}.json`;
+}
+
+function loadJsonIfExists(filePath, fallback) {
+  if (!fs.existsSync(filePath)) return fallback;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function writeJson(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
 }
 
 function sendJson(res, statusCode, payload) {
@@ -161,7 +177,90 @@ async function suggestFromArtifact(payload) {
   }
 }
 
-async function handleApi(req, res, pathname) {
+function buildApprovedLatest(programId) {
+  const index = loadJsonIfExists(approvedIndexPath, {
+    schema_version: "1.0",
+    updated_at: "",
+    programs: {}
+  });
+  const entry = index.programs && index.programs[programId] ? index.programs[programId] : null;
+  if (!entry || !entry.latest || !entry.latest.approved_file) {
+    return null;
+  }
+  const approvedFile = path.join(approvedDir, entry.latest.approved_file);
+  const data = loadJsonIfExists(approvedFile, null);
+  if (!data) return null;
+  return {
+    ...entry.latest,
+    data
+  };
+}
+
+function approveRevision(payload) {
+  const programId = safeProgramId(payload.programId);
+  const revision = String(payload.revision || "").trim();
+  if (!revision) {
+    return { status: 400, body: { error: "revision is required" } };
+  }
+
+  const revisionPath = path.join(__dirname, "data", "manifests", programId, revision);
+  if (!fs.existsSync(revisionPath)) {
+    return { status: 404, body: { error: "revision not found" } };
+  }
+
+  const revisionData = loadJsonIfExists(revisionPath, null);
+  if (!revisionData) {
+    return { status: 500, body: { error: "could not read revision" } };
+  }
+
+  ensureDir(approvedDir);
+  const now = new Date().toISOString();
+  const approvedBy = String(payload.approvedBy || "local-review").trim();
+  const approvedFile = `${programId}--${revision.replace(/[^a-zA-Z0-9.-]/g, "-")}`;
+
+  const approvedPayload = {
+    approved_at: now,
+    approved_by: approvedBy,
+    source_revision: revision,
+    program_id: programId,
+    manifest: revisionData.manifest,
+    answers: revisionData.answers
+  };
+
+  writeJson(path.join(approvedDir, approvedFile), approvedPayload);
+
+  const index = loadJsonIfExists(approvedIndexPath, {
+    schema_version: "1.0",
+    updated_at: "",
+    programs: {}
+  });
+
+  if (!index.programs[programId]) {
+    index.programs[programId] = { latest: null, history: [] };
+  }
+
+  const latest = {
+    program_id: programId,
+    revision,
+    approved_at: now,
+    approved_by: approvedBy,
+    approved_file: approvedFile,
+    libraries_count: Array.isArray(revisionData.manifest && revisionData.manifest.libraries)
+      ? revisionData.manifest.libraries.length
+      : 0
+  };
+
+  index.programs[programId].latest = latest;
+  index.programs[programId].history = [latest, ...(index.programs[programId].history || [])].slice(0, 100);
+  index.updated_at = now;
+  writeJson(approvedIndexPath, index);
+
+  return { status: 200, body: { ok: true, latest } };
+}
+
+async function handleApi(req, res, urlObj) {
+  const pathname = urlObj.pathname;
+
   if (req.method === "POST" && pathname === "/api/ai/suggest") {
     const payload = await collectJson(req);
     const result = await suggestFromArtifact(payload);
@@ -184,20 +283,31 @@ async function handleApi(req, res, pathname) {
     const outPath = path.join(baseDir, revision);
     const now = new Date().toISOString();
 
-    const filePayload = {
+    writeJson(outPath, {
       revision,
       program_id: normalizedProgramId,
       created_at: now,
       answers,
       manifest
-    };
+    });
 
-    fs.writeFileSync(outPath, JSON.stringify(filePayload, null, 2), "utf8");
     return sendJson(res, 200, {
       ok: true,
       revision,
       path: path.relative(__dirname, outPath).replace(/\\/g, "/")
     });
+  }
+
+  if (req.method === "POST" && pathname === "/api/revisions/approve") {
+    const payload = await collectJson(req);
+    const result = approveRevision(payload || {});
+    return sendJson(res, result.status, result.body);
+  }
+
+  if (req.method === "GET" && pathname === "/api/approved/latest") {
+    const programId = safeProgramId(urlObj.searchParams.get("programId") || "program");
+    const latest = buildApprovedLatest(programId);
+    return sendJson(res, 200, { latest });
   }
 
   const revListMatch = pathname.match(/^\/api\/revisions\/([^\/]+)$/);
@@ -222,16 +332,16 @@ async function handleApi(req, res, pathname) {
     if (!fs.existsSync(filePath)) {
       return sendJson(res, 404, { error: "revision not found" });
     }
-    const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    return sendJson(res, 200, data);
+    const data = loadJsonIfExists(filePath, null);
+    return sendJson(res, 200, data || {});
   }
 
   return sendJson(res, 404, { error: "not found" });
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host || `localhost:${port}`}`);
-  const pathname = url.pathname;
+  const urlObj = new URL(req.url, `http://${req.headers.host || `localhost:${port}`}`);
+  const pathname = urlObj.pathname;
 
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
@@ -244,7 +354,7 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname.startsWith("/api/")) {
     try {
-      return await handleApi(req, res, pathname);
+      return await handleApi(req, res, urlObj);
     } catch (err) {
       return sendJson(res, 500, {
         error: "server_error",

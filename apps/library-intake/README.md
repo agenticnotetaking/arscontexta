@@ -1,22 +1,24 @@
-# Library Intake UI
+﻿# Library Intake UI
 
 Standalone intake app for building federated business-function library manifests.
 
 ## Features
 
-1. Sectioned HTML wizard with plain-language prompts
+1. Step-by-step wizard with stakeholder-friendly wording
 2. Guided interview mode (fills the same model as the form)
 3. Artifact-assisted suggestions via OpenAI API
 4. Visual mapping mode with draggable library nodes and typed links
-5. JSON export/import (`answers.json`, `manifest.json`)
-6. Local revisioning via server endpoints
+5. In-app help cards with expected input, defaults, and examples per step
+6. Bank Starter preset for fast onboarding
+7. JSON export/import (`answers.json`, `manifest.json`)
+8. Revision save/load and approval workflow
+9. Retrieve latest approved libraries for easy reuse/linking
 
 ## Run
 
 ```bash
 cd apps/library-intake
-npm install
-npm start
+node server.js
 ```
 
 Open: `http://localhost:5077`
@@ -32,11 +34,16 @@ set OPENAI_MODEL=gpt-4.1-mini
 
 If no key is set, artifact-assisted mode remains available but AI suggestion requests return a clear error and manual mode still works.
 
-## Revision Storage
+## Revision and Approval Storage
 
-Saved revisions are written to:
+Saved revisions:
 
 - `apps/library-intake/data/manifests/<program-id>/rev-0001.json`
+
+Approved snapshots (repo-level):
+
+- `ops/federation/approved/approved-index.json`
+- `ops/federation/approved/<program-id>--rev-XXXX.json`
 
 ## Manifest Scaffolding
 
