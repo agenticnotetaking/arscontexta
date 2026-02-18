@@ -1,96 +1,118 @@
+﻿
 (function () {
   const steps = [
-    { id: "program", label: "Program Basics" },
-    { id: "libraries", label: "Libraries" },
-    { id: "shared", label: "Shared Business Terms" },
-    { id: "handoffs", label: "Cross-Library Handoffs" },
-    { id: "governance", label: "Governance" },
-    { id: "artifact", label: "Artifact Assist" },
-    { id: "visual", label: "Visual Mapping" },
-    { id: "review", label: "Review & Export" }
+    { id: "panelProgram", title: "Program basics", hint: "Name the program and define who owns it." },
+    { id: "panelInterview", title: "Guided interview", hint: "Optional: answer prompts and auto-fill the form." },
+    { id: "panelLibraries", title: "Libraries", hint: "Define each business function as a library." },
+    { id: "panelTerms", title: "Shared terms", hint: "Set common language across teams." },
+    { id: "panelHandoffs", title: "Handoffs", hint: "Describe how work moves between libraries." },
+    { id: "panelArtifact", title: "AI drafting", hint: "Optional: draft suggestions from source documents." },
+    { id: "panelMap", title: "Visual map", hint: "Arrange the map for stakeholder readability." },
+    { id: "panelGovernance", title: "Governance", hint: "Set baseline controls and compliance defaults." },
+    { id: "panelReview", title: "Review & export", hint: "Inspect final output and manage revisions." }
   ];
 
   const interviewQuestions = [
-    { key: "programName", prompt: "What should this context program be called?" },
-    { key: "ownerUnit", prompt: "Which team or unit owns this program?" },
+    { key: "programName", prompt: "What should this program be called?" },
+    { key: "ownerUnit", prompt: "Which team owns this work?" },
     { key: "targetOutcome", prompt: "What outcome should improve in 6-12 months?" },
-    { key: "libraries", prompt: "List the business functions as libraries (comma-separated)." },
-    { key: "entities", prompt: "List shared business terms (entities)." },
-    { key: "relationships", prompt: "List shared relationship types." },
-    { key: "classificationBaseline", prompt: "Data classification baseline (public/internal/confidential/restricted)?" }
+    { key: "libraries", prompt: "List functions as libraries (comma-separated)." },
+    { key: "entities", prompt: "List shared business terms everyone should use." },
+    { key: "relationships", prompt: "List relationship words teams should use consistently." },
+    { key: "classificationBaseline", prompt: "Baseline data sensitivity? public/internal/confidential/restricted" }
   ];
 
+  const recommendedEntityChips = ["process", "control", "risk", "metric", "policy", "exception", "system", "role"];
+  const recommendedRelationshipChips = ["depends_on", "owned_by", "mitigates", "measured_by", "escalates_to", "feeds"];
+
   const state = {
-    mode: "form",
+    currentStep: 0,
     interviewIndex: 0,
-    program: {
-      name: "",
-      id: "",
-      owner_unit: "",
-      target_outcome: ""
-    },
+    program: { name: "", id: "", owner_unit: "", target_outcome: "" },
     libraries: [],
-    shared_terms: {
-      entities: [],
-      relationships: []
-    },
+    shared_terms: { entities: [], relationships: [] },
     links: [],
     governance: {
       classification_baseline: "confidential",
       review_cadence: "monthly",
       retention_months: 36,
       change_approval: "dual-approver",
-      required_provenance_fields: [
-        "source_ref",
-        "captured_at",
-        "owner_role",
-        "confidence",
-        "effective_from"
-      ]
+      required_provenance_fields: ["source_ref", "captured_at", "owner_role", "confidence", "effective_from"]
     },
     artifact_suggestions: null,
     map_positions: {}
   };
 
   const ui = {
-    sectionNav: byId("sectionNav"),
+    stepper: byId("stepper"),
+    progressBar: byId("progressBar"),
+    stepTitle: byId("stepTitle"),
+    stepHint: byId("stepHint"),
+    status: byId("status"),
+    btnPrevStep: byId("btnPrevStep"),
+    btnNextStep: byId("btnNextStep"),
     librariesContainer: byId("librariesContainer"),
     linksContainer: byId("linksContainer"),
     sharedEntities: byId("sharedEntities"),
     sharedRelationships: byId("sharedRelationships"),
     manifestPreview: byId("manifestPreview"),
-    status: byId("status"),
     interviewPrompt: byId("interviewPrompt"),
     interviewAnswer: byId("interviewAnswer"),
     mapBoard: byId("mapBoard"),
     mapSvg: byId("mapSvg"),
     artifactSuggestions: byId("artifactSuggestions"),
-    revisionSelect: byId("revisionSelect")
+    revisionSelect: byId("revisionSelect"),
+    entityChips: byId("entityChips"),
+    relationshipChips: byId("relationshipChips")
   };
 
-  boot();
+  init();
 
-  function boot() {
-    renderNav();
-    wireTopLevelInputs();
+  function init() {
+    buildStepper();
+    wireInputs();
     bindButtons();
+    renderChips();
     ensureInitialLibrary();
     renderAll();
   }
 
-  function renderNav() {
-    ui.sectionNav.innerHTML = steps
-      .map(
-        (s) =>
-          `<a class="pill-nav" href="#${s.id}" data-step-nav="${s.id}">${s.label}</a>`
-      )
-      .join("");
-    document.querySelectorAll("[data-step]").forEach((step) => {
-      step.id = step.dataset.step;
+  function buildStepper() {
+    ui.stepper.innerHTML = "";
+    steps.forEach((step, idx) => {
+      const li = document.createElement("li");
+      const button = document.createElement("button");
+      button.textContent = `${idx + 1}. ${step.title}`;
+      button.addEventListener("click", () => {
+        state.currentStep = idx;
+        renderStep();
+      });
+      li.appendChild(button);
+      ui.stepper.appendChild(li);
     });
   }
 
-  function wireTopLevelInputs() {
+  function renderStep() {
+    const total = steps.length;
+    const current = state.currentStep;
+    const step = steps[current];
+    ui.stepTitle.textContent = `Step ${current + 1} of ${total}: ${step.title}`;
+    ui.stepHint.textContent = step.hint;
+    ui.progressBar.style.width = `${((current + 1) / total) * 100}%`;
+
+    steps.forEach((s, idx) => {
+      const panel = byId(s.id);
+      if (!panel) return;
+      panel.classList.toggle("active", idx === current);
+      const stepBtn = ui.stepper.querySelectorAll("button")[idx];
+      if (stepBtn) stepBtn.classList.toggle("active", idx === current);
+    });
+
+    ui.btnPrevStep.disabled = current === 0;
+    ui.btnNextStep.textContent = current === total - 1 ? "Finish" : "Next";
+  }
+
+  function wireInputs() {
     byId("programName").addEventListener("input", (e) => {
       state.program.name = e.target.value;
       if (!state.program.id) {
@@ -112,6 +134,7 @@
       state.program.target_outcome = e.target.value;
       renderManifest();
     });
+
     ui.sharedEntities.addEventListener("input", (e) => {
       state.shared_terms.entities = splitCsv(e.target.value);
       renderManifest();
@@ -120,6 +143,7 @@
       state.shared_terms.relationships = splitCsv(e.target.value);
       renderManifest();
     });
+
     byId("classificationBaseline").addEventListener("change", (e) => {
       state.governance.classification_baseline = e.target.value;
       renderManifest();
@@ -140,31 +164,79 @@
       state.governance.required_provenance_fields = splitCsv(e.target.value);
       renderManifest();
     });
-    document.querySelectorAll("input[name='mode']").forEach((r) => {
-      r.addEventListener("change", (e) => {
-        state.mode = e.target.value;
-        ui.status.textContent = `Mode: ${state.mode}`;
-      });
-    });
   }
-
   function bindButtons() {
+    ui.btnPrevStep.addEventListener("click", () => {
+      if (state.currentStep > 0) {
+        state.currentStep -= 1;
+        renderStep();
+      }
+    });
+    ui.btnNextStep.addEventListener("click", () => {
+      if (state.currentStep < steps.length - 1) {
+        state.currentStep += 1;
+        renderStep();
+      } else {
+        setStatus("All steps complete. Export your manifest when ready.");
+      }
+    });
+
     byId("btnAddLibrary").addEventListener("click", addLibrary);
     byId("btnAddLink").addEventListener("click", addLink);
-    byId("btnExportAnswers").addEventListener("click", () =>
-      downloadJson("answers.json", buildAnswers())
-    );
-    byId("btnExportManifest").addEventListener("click", () =>
-      downloadJson("manifest.json", buildManifest())
-    );
+
+    byId("btnExportAnswers").addEventListener("click", () => downloadJson("answers.json", buildAnswers()));
+    byId("btnExportManifest").addEventListener("click", () => downloadJson("manifest.json", buildManifest()));
+    byId("btnExportManifest2").addEventListener("click", () => downloadJson("manifest.json", buildManifest()));
+
     byId("btnSaveRevision").addEventListener("click", saveRevision);
     byId("btnLoadRevisions").addEventListener("click", loadRevisionList);
     byId("btnLoadRevision").addEventListener("click", loadRevision);
+
     byId("btnSuggestFromArtifact").addEventListener("click", requestArtifactSuggestions);
+    byId("artifactFileInput").addEventListener("change", readArtifactFile);
+
     byId("btnInterviewApply").addEventListener("click", applyInterviewAnswer);
     byId("btnInterviewNext").addEventListener("click", nextInterviewQuestion);
+
     byId("importJsonInput").addEventListener("change", importJson);
-    byId("artifactFileInput").addEventListener("change", readArtifactFile);
+  }
+
+  function renderChips() {
+    renderChipGroup(ui.entityChips, recommendedEntityChips, () => state.shared_terms.entities, (next) => {
+      state.shared_terms.entities = next;
+      ui.sharedEntities.value = next.join(", ");
+      renderManifest();
+    });
+
+    renderChipGroup(ui.relationshipChips, recommendedRelationshipChips, () => state.shared_terms.relationships, (next) => {
+      state.shared_terms.relationships = next;
+      ui.sharedRelationships.value = next.join(", ");
+      renderManifest();
+    });
+  }
+
+  function renderChipGroup(container, values, getSelected, setSelected) {
+    container.innerHTML = "";
+    values.forEach((value) => {
+      const button = document.createElement("button");
+      button.className = "chip";
+      button.type = "button";
+      button.textContent = value;
+      const selected = new Set(getSelected());
+      if (selected.has(value)) {
+        button.style.background = "#dff4ef";
+        button.style.borderColor = "#94ccbf";
+      }
+      button.addEventListener("click", () => {
+        const current = new Set(getSelected());
+        if (current.has(value)) current.delete(value);
+        else current.add(value);
+        const next = Array.from(current);
+        setSelected(next);
+        renderChips();
+      });
+      container.appendChild(button);
+    });
   }
 
   function ensureInitialLibrary() {
@@ -220,143 +292,116 @@
       const card = document.createElement("div");
       card.className = "library-card";
       card.innerHTML = `
-        <strong>Library ${idx + 1}</strong>
-        <label>ID <input data-lib="${idx}" data-field="id" value="${escape(lib.id)}"></label>
-        <label>Display Name <input data-lib="${idx}" data-field="display_name" value="${escape(lib.display_name)}"></label>
-        <label>Purpose <input data-lib="${idx}" data-field="purpose" value="${escape(lib.purpose)}"></label>
-        <label>Decisions (comma-separated) <input data-lib="${idx}" data-field="decisions_supported" value="${escape(lib.decisions_supported.join(", "))}"></label>
-        <label>Inputs (comma-separated) <input data-lib="${idx}" data-field="inputs" value="${escape(lib.inputs.join(", "))}"></label>
-        <label>Outputs (comma-separated) <input data-lib="${idx}" data-field="outputs" value="${escape(lib.outputs.join(", "))}"></label>
-        <label>Owner Role <input data-lib="${idx}" data-field="owner_role" value="${escape(lib.owner_role)}"></label>
-        <label>Weekly Change Volume
-          <select data-lib="${idx}" data-field="weekly_change_volume">
-            ${["low", "medium", "high"]
-              .map((v) => `<option ${v === lib.weekly_change_volume ? "selected" : ""}>${v}</option>`)
-              .join("")}
-          </select>
-        </label>
+        <strong>${escape(lib.display_name || `Library ${idx + 1}`)}</strong>
+        <label>Library ID<input data-lib="${idx}" data-field="id" value="${escape(lib.id)}"></label>
+        <label>Display name<input data-lib="${idx}" data-field="display_name" value="${escape(lib.display_name)}"></label>
+        <label>Purpose<input data-lib="${idx}" data-field="purpose" value="${escape(lib.purpose)}"></label>
+        <details>
+          <summary>More details</summary>
+          <label>Decisions this helps with<input data-lib="${idx}" data-field="decisions_supported" value="${escape(lib.decisions_supported.join(", "))}"></label>
+          <label>Inputs<input data-lib="${idx}" data-field="inputs" value="${escape(lib.inputs.join(", "))}"></label>
+          <label>Outputs<input data-lib="${idx}" data-field="outputs" value="${escape(lib.outputs.join(", "))}"></label>
+          <label>Owner role<input data-lib="${idx}" data-field="owner_role" value="${escape(lib.owner_role)}"></label>
+          <label>Weekly change volume
+            <select data-lib="${idx}" data-field="weekly_change_volume">
+              ${["low", "medium", "high"].map((v) => `<option ${v === lib.weekly_change_volume ? "selected" : ""}>${v}</option>`).join("")}
+            </select>
+          </label>
+        </details>
         <button data-remove-lib="${idx}">Remove Library</button>
       `;
       ui.librariesContainer.appendChild(card);
     });
 
-    ui.librariesContainer
-      .querySelectorAll("input[data-lib],select[data-lib]")
-      .forEach((el) =>
-        el.addEventListener("input", (e) => {
-          const i = Number(e.target.dataset.lib);
-          const field = e.target.dataset.field;
-          let value = e.target.value;
-          if (field === "id") {
-            value = toKebab(value);
-            e.target.value = value;
-          }
-          if (["decisions_supported", "inputs", "outputs"].includes(field)) {
-            value = splitCsv(value);
-          }
-          state.libraries[i][field] = value;
-          renderLinks();
-          renderMap();
-          renderManifest();
-        })
-      );
+    ui.librariesContainer.querySelectorAll("input[data-lib],select[data-lib]").forEach((el) =>
+      el.addEventListener("input", (e) => {
+        const i = Number(e.target.dataset.lib);
+        const field = e.target.dataset.field;
+        let value = e.target.value;
+        if (field === "id") {
+          value = toKebab(value);
+          e.target.value = value;
+        }
+        if (["decisions_supported", "inputs", "outputs"].includes(field)) value = splitCsv(value);
+        state.libraries[i][field] = value;
+        renderLinks();
+        renderMap();
+        renderManifest();
+      })
+    );
 
-    ui.librariesContainer
-      .querySelectorAll("button[data-remove-lib]")
-      .forEach((btn) =>
-        btn.addEventListener("click", (e) => {
-          const i = Number(e.target.dataset.removeLib);
-          state.libraries.splice(i, 1);
-          if (!state.libraries.length) {
-            ensureInitialLibrary();
-          }
-          renderAll();
-        })
-      );
+    ui.librariesContainer.querySelectorAll("button[data-remove-lib]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const i = Number(e.target.dataset.removeLib);
+        state.libraries.splice(i, 1);
+        if (!state.libraries.length) ensureInitialLibrary();
+        renderAll();
+      });
+    });
   }
 
   function renderLinks() {
     ui.linksContainer.innerHTML = "";
     state.links.forEach((link, idx) => {
-      const options = state.libraries
-        .map((l) => `<option value="${escape(l.id)}">${escape(l.id)}</option>`)
-        .join("");
+      const options = state.libraries.map((l) => `<option value="${escape(l.id)}">${escape(l.display_name || l.id)}</option>`).join("");
       const card = document.createElement("div");
       card.className = "link-card";
       card.innerHTML = `
-        <strong>Link ${idx + 1}</strong>
-        <label>Source Library
-          <select data-link="${idx}" data-field="source_library">${options}</select>
-        </label>
-        <label>Target Library
-          <select data-link="${idx}" data-field="target_library">${options}</select>
-        </label>
-        <label>Contract Type
+        <strong>Handoff ${idx + 1}</strong>
+        <label>From<select data-link="${idx}" data-field="source_library">${options}</select></label>
+        <label>To<select data-link="${idx}" data-field="target_library">${options}</select></label>
+        <label>Type
           <select data-link="${idx}" data-field="contract_type">
-            ${["handoff", "control", "data", "escalation", "dependency"]
-              .map((v) => `<option ${v === link.contract_type ? "selected" : ""}>${v}</option>`)
-              .join("")}
+            ${["handoff", "control", "data", "escalation", "dependency"].map((v) => `<option ${v === link.contract_type ? "selected" : ""}>${v}</option>`).join("")}
           </select>
         </label>
-        <label>Object <input data-link="${idx}" data-field="object" value="${escape(link.object)}"></label>
-        <label>Trigger Event <input data-link="${idx}" data-field="trigger_event" value="${escape(link.trigger_event)}"></label>
-        <label>SLA Target <input data-link="${idx}" data-field="sla_target" value="${escape(link.sla_target)}"></label>
-        <label>Failure Signal <input data-link="${idx}" data-field="failure_signal" value="${escape(link.failure_signal)}"></label>
-        <label>Required Fields (comma-separated)
-          <input data-link="${idx}" data-field="required_fields" value="${escape((link.required_fields || []).join(", "))}">
-        </label>
-        <button data-remove-link="${idx}">Remove Link</button>
+        <label>What moves between teams?<input data-link="${idx}" data-field="object" value="${escape(link.object)}"></label>
+        <details>
+          <summary>More details</summary>
+          <label>Trigger event<input data-link="${idx}" data-field="trigger_event" value="${escape(link.trigger_event)}"></label>
+          <label>SLA target<input data-link="${idx}" data-field="sla_target" value="${escape(link.sla_target)}"></label>
+          <label>Failure signal<input data-link="${idx}" data-field="failure_signal" value="${escape(link.failure_signal)}"></label>
+          <label>Required fields<input data-link="${idx}" data-field="required_fields" value="${escape((link.required_fields || []).join(", "))}"></label>
+        </details>
+        <button data-remove-link="${idx}">Remove Handoff</button>
       `;
       ui.linksContainer.appendChild(card);
-
-      const sourceSel = card.querySelector('select[data-field="source_library"]');
-      const targetSel = card.querySelector('select[data-field="target_library"]');
-      sourceSel.value = link.source_library || "";
-      targetSel.value = link.target_library || "";
+      card.querySelector('select[data-field="source_library"]').value = link.source_library || "";
+      card.querySelector('select[data-field="target_library"]').value = link.target_library || "";
     });
 
-    ui.linksContainer
-      .querySelectorAll("input[data-link],select[data-link]")
-      .forEach((el) =>
-        el.addEventListener("input", (e) => {
-          const i = Number(e.target.dataset.link);
-          const field = e.target.dataset.field;
-          let value = e.target.value;
-          if (field === "required_fields") {
-            value = splitCsv(value);
-          }
-          state.links[i][field] = value;
-          renderMap();
-          renderManifest();
-        })
-      );
+    ui.linksContainer.querySelectorAll("input[data-link],select[data-link]").forEach((el) =>
+      el.addEventListener("input", (e) => {
+        const i = Number(e.target.dataset.link);
+        const field = e.target.dataset.field;
+        let value = e.target.value;
+        if (field === "required_fields") value = splitCsv(value);
+        state.links[i][field] = value;
+        renderMap();
+        renderManifest();
+      })
+    );
 
-    ui.linksContainer
-      .querySelectorAll("button[data-remove-link]")
-      .forEach((btn) =>
-        btn.addEventListener("click", (e) => {
-          const i = Number(e.target.dataset.removeLink);
-          state.links.splice(i, 1);
-          renderLinks();
-          renderMap();
-          renderManifest();
-        })
-      );
+    ui.linksContainer.querySelectorAll("button[data-remove-link]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const i = Number(e.target.dataset.removeLink);
+        state.links.splice(i, 1);
+        renderLinks();
+        renderMap();
+        renderManifest();
+      });
+    });
   }
-
   function renderMap() {
     ui.mapBoard.innerHTML = "";
     ui.mapSvg.innerHTML = "";
     const width = ui.mapBoard.clientWidth || 800;
-    const height = ui.mapBoard.clientHeight || 380;
+    const height = ui.mapBoard.clientHeight || 360;
     ui.mapSvg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
     state.libraries.forEach((lib, idx) => {
       if (!state.map_positions[lib.id]) {
-        state.map_positions[lib.id] = {
-          x: 30 + (idx % 4) * 180,
-          y: 30 + Math.floor(idx / 4) * 110
-        };
+        state.map_positions[lib.id] = { x: 30 + (idx % 4) * 180, y: 30 + Math.floor(idx / 4) * 110 };
       }
       const node = document.createElement("div");
       node.className = "node";
@@ -366,22 +411,23 @@
       node.style.left = `${pos.x}px`;
       node.style.top = `${pos.y}px`;
       ui.mapBoard.appendChild(node);
-      makeDraggable(node, lib.id, () => drawLinks(width, height));
+      makeDraggable(node, lib.id, drawLinks);
     });
 
-    drawLinks(width, height);
+    drawLinks();
   }
 
-  function drawLinks(width, height) {
+  function drawLinks() {
     ui.mapSvg.innerHTML = "";
     const centers = {};
     ui.mapBoard.querySelectorAll(".node").forEach((n) => {
-      const libId = n.dataset.libId;
-      centers[libId] = {
-        x: n.offsetLeft + n.offsetWidth / 2,
-        y: n.offsetTop + n.offsetHeight / 2
-      };
+      centers[n.dataset.libId] = { x: n.offsetLeft + n.offsetWidth / 2, y: n.offsetTop + n.offsetHeight / 2 };
     });
+
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    defs.innerHTML = '<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0f7e6f"></path></marker>';
+    ui.mapSvg.appendChild(defs);
+
     state.links.forEach((link) => {
       const s = centers[link.source_library];
       const t = centers[link.target_library];
@@ -391,19 +437,11 @@
       line.setAttribute("y1", String(s.y));
       line.setAttribute("x2", String(t.x));
       line.setAttribute("y2", String(t.y));
-      line.setAttribute("stroke", "#0e7a6d");
+      line.setAttribute("stroke", "#0f7e6f");
       line.setAttribute("stroke-width", "2");
       line.setAttribute("marker-end", "url(#arrow)");
       ui.mapSvg.appendChild(line);
     });
-    addArrowMarker();
-
-    function addArrowMarker() {
-      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-      defs.innerHTML =
-        '<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0e7a6d"></path></marker>';
-      ui.mapSvg.appendChild(defs);
-    }
   }
 
   function makeDraggable(node, libId, onMove) {
@@ -432,26 +470,22 @@
   async function requestArtifactSuggestions() {
     const artifactText = byId("artifactText").value.trim();
     if (!artifactText) {
-      setStatus("Paste or upload artifact text first.");
+      setStatus("Paste or upload source text first.");
       return;
     }
-    setStatus("Generating suggestions...");
+    setStatus("Generating AI suggestions...");
+
     try {
       const resp = await fetch("/api/ai/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          artifactText,
-          currentLibraries: state.libraries.map((l) => l.id)
-        })
+        body: JSON.stringify({ artifactText, currentLibraries: state.libraries.map((l) => l.id) })
       });
       const payload = await resp.json();
-      if (!resp.ok) {
-        throw new Error(payload.error || "suggestion_failed");
-      }
+      if (!resp.ok) throw new Error(payload.error || "suggestion_failed");
       state.artifact_suggestions = payload.data;
       renderSuggestions();
-      setStatus("Suggestions ready. Review and apply selectively.");
+      setStatus("Suggestions ready. Apply only what looks right.");
     } catch (err) {
       setStatus(`Suggestion failed: ${err.message}`);
     }
@@ -463,26 +497,25 @@
       ui.artifactSuggestions.innerHTML = "";
       return;
     }
+
     ui.artifactSuggestions.innerHTML = `
       <div class="suggestion-card">
-        <h3>Suggested Libraries</h3>
+        <h4>Suggested libraries</h4>
         <pre>${escape(JSON.stringify(data.libraries || [], null, 2))}</pre>
-        <button id="applySuggestedLibraries">Apply Libraries</button>
+        <button id="applySuggestedLibraries" class="primary">Apply suggested libraries</button>
       </div>
       <div class="suggestion-card">
-        <h3>Suggested Shared Terms</h3>
-        <pre>${escape(JSON.stringify({
-          entities: data.shared_entities || [],
-          relationships: data.shared_relationships || []
-        }, null, 2))}</pre>
-        <button id="applySuggestedTerms">Apply Shared Terms</button>
+        <h4>Suggested shared terms</h4>
+        <pre>${escape(JSON.stringify({ entities: data.shared_entities || [], relationships: data.shared_relationships || [] }, null, 2))}</pre>
+        <button id="applySuggestedTerms" class="primary">Apply suggested terms</button>
       </div>
       <div class="suggestion-card">
-        <h3>Suggested Links</h3>
+        <h4>Suggested handoffs</h4>
         <pre>${escape(JSON.stringify(data.links || [], null, 2))}</pre>
-        <button id="applySuggestedLinks">Apply Links</button>
+        <button id="applySuggestedLinks" class="primary">Apply suggested handoffs</button>
       </div>
     `;
+
     byId("applySuggestedLibraries").addEventListener("click", () => {
       if (Array.isArray(data.libraries) && data.libraries.length) {
         state.libraries = data.libraries.map((l, i) => ({
@@ -498,15 +531,16 @@
       }
       renderAll();
     });
+
     byId("applySuggestedTerms").addEventListener("click", () => {
       state.shared_terms.entities = Array.isArray(data.shared_entities) ? data.shared_entities : [];
-      state.shared_terms.relationships = Array.isArray(data.shared_relationships)
-        ? data.shared_relationships
-        : [];
+      state.shared_terms.relationships = Array.isArray(data.shared_relationships) ? data.shared_relationships : [];
       ui.sharedEntities.value = state.shared_terms.entities.join(", ");
       ui.sharedRelationships.value = state.shared_terms.relationships.join(", ");
+      renderChips();
       renderManifest();
     });
+
     byId("applySuggestedLinks").addEventListener("click", () => {
       if (Array.isArray(data.links)) {
         state.links = data.links.map((l) => ({
@@ -535,6 +569,7 @@
     const q = interviewQuestions[state.interviewIndex];
     const answer = ui.interviewAnswer.value.trim();
     if (!answer) return;
+
     switch (q.key) {
       case "programName":
         state.program.name = answer;
@@ -551,7 +586,7 @@
         byId("targetOutcome").value = answer;
         break;
       case "libraries":
-        state.libraries = splitCsv(answer).map((name, i) => ({
+        state.libraries = splitCsv(answer).map((name) => ({
           id: toKebab(name),
           display_name: name,
           purpose: "",
@@ -570,28 +605,30 @@
         state.shared_terms.relationships = splitCsv(answer);
         ui.sharedRelationships.value = state.shared_terms.relationships.join(", ");
         break;
-      case "classificationBaseline":
-        state.governance.classification_baseline = answer.toLowerCase();
-        byId("classificationBaseline").value = state.governance.classification_baseline;
+      case "classificationBaseline": {
+        const v = answer.toLowerCase();
+        if (["public", "internal", "confidential", "restricted"].includes(v)) {
+          state.governance.classification_baseline = v;
+          byId("classificationBaseline").value = v;
+        }
         break;
+      }
       default:
         break;
     }
+
     ui.interviewAnswer.value = "";
-    setStatus(`Applied answer to ${q.key}.`);
+    setStatus(`Applied answer to: ${q.prompt}`);
     renderAll();
   }
 
   function renderInterview() {
-    const q = interviewQuestions[state.interviewIndex];
-    ui.interviewPrompt.textContent = q.prompt;
+    ui.interviewPrompt.textContent = interviewQuestions[state.interviewIndex].prompt;
   }
-
   function buildAnswers() {
     return {
       schema_version: "1.0",
       captured_at: new Date().toISOString(),
-      mode: state.mode,
       program: state.program,
       libraries: state.libraries,
       shared_terms: state.shared_terms,
@@ -643,6 +680,7 @@
   }
 
   function renderAll() {
+    renderStep();
     renderLibraries();
     renderLinks();
     renderMap();
@@ -651,9 +689,7 @@
   }
 
   function downloadJson(filename, data) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json"
-    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -668,16 +704,12 @@
       const resp = await fetch("/api/revisions/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          programId,
-          answers: buildAnswers(),
-          manifest: buildManifest()
-        })
+        body: JSON.stringify({ programId, answers: buildAnswers(), manifest: buildManifest() })
       });
       const payload = await resp.json();
       if (!resp.ok) throw new Error(payload.error || "save_failed");
-      setStatus(`Saved ${payload.revision} to ${payload.path}`);
-      loadRevisionList();
+      setStatus(`Saved revision ${payload.revision}.`);
+      await loadRevisionList();
     } catch (err) {
       setStatus(`Save failed: ${err.message}`);
     }
@@ -689,23 +721,22 @@
     const payload = await resp.json();
     ui.revisionSelect.innerHTML = "";
     (payload.revisions || []).forEach((rev) => {
-      const option = document.createElement("option");
-      option.value = rev;
-      option.textContent = rev;
-      ui.revisionSelect.appendChild(option);
+      const opt = document.createElement("option");
+      opt.value = rev;
+      opt.textContent = rev;
+      ui.revisionSelect.appendChild(opt);
     });
-    setStatus(`Loaded ${payload.revisions.length || 0} revisions.`);
+    setStatus(`Found ${(payload.revisions || []).length} revision(s).`);
   }
 
   async function loadRevision() {
     const programId = state.program.id || toKebab(state.program.name) || "program";
     const rev = ui.revisionSelect.value;
     if (!rev) return;
-    const resp = await fetch(
-      `/api/revisions/${encodeURIComponent(programId)}/${encodeURIComponent(rev)}`
-    );
+
+    const resp = await fetch(`/api/revisions/${encodeURIComponent(programId)}/${encodeURIComponent(rev)}`);
     if (!resp.ok) {
-      setStatus("Failed to load revision.");
+      setStatus("Could not load selected revision.");
       return;
     }
     const payload = await resp.json();
@@ -714,7 +745,6 @@
   }
 
   function hydrateFromAnswers(answers) {
-    state.mode = answers.mode || "form";
     state.program = answers.program || state.program;
     state.libraries = Array.isArray(answers.libraries) ? answers.libraries : state.libraries;
     state.shared_terms = answers.shared_terms || state.shared_terms;
@@ -725,17 +755,17 @@
     byId("programId").value = state.program.id || "";
     byId("ownerUnit").value = state.program.owner_unit || "";
     byId("targetOutcome").value = state.program.target_outcome || "";
+
     ui.sharedEntities.value = (state.shared_terms.entities || []).join(", ");
     ui.sharedRelationships.value = (state.shared_terms.relationships || []).join(", ");
+
     byId("classificationBaseline").value = state.governance.classification_baseline || "confidential";
     byId("reviewCadence").value = state.governance.review_cadence || "monthly";
     byId("retentionMonths").value = state.governance.retention_months || 36;
     byId("changeApproval").value = state.governance.change_approval || "dual-approver";
-    byId("provenanceFields").value = (state.governance.required_provenance_fields || []).join(", ");
+    byId("provenanceFields").value = (state.governance.required_provenance_fields || []).join(",");
 
-    document.querySelectorAll("input[name='mode']").forEach((r) => {
-      r.checked = r.value === state.mode;
-    });
+    renderChips();
     renderAll();
   }
 
@@ -748,30 +778,31 @@
         const parsed = JSON.parse(String(reader.result || "{}"));
         if (parsed.answers) {
           hydrateFromAnswers(parsed.answers);
-          setStatus("Imported revision-style JSON.");
-        } else if (parsed.program || parsed.libraries) {
+          setStatus("Imported revision file.");
+          return;
+        }
+        if (parsed.program || parsed.libraries) {
           hydrateFromAnswers(parsed);
-          setStatus("Imported answers JSON.");
-        } else if (parsed.program_id && parsed.libraries) {
-          const answers = {
-            mode: "form",
+          setStatus("Imported answers file.");
+          return;
+        }
+        if (parsed.program_id && parsed.libraries) {
+          hydrateFromAnswers({
             program: {
               id: parsed.program_id,
               name: parsed.program && parsed.program.name ? parsed.program.name : "",
               owner_unit: parsed.program && parsed.program.owner_unit ? parsed.program.owner_unit : "",
-              target_outcome:
-                parsed.program && parsed.program.target_outcome ? parsed.program.target_outcome : ""
+              target_outcome: parsed.program && parsed.program.target_outcome ? parsed.program.target_outcome : ""
             },
             libraries: parsed.libraries,
             shared_terms: parsed.ontology || { entities: [], relationships: [] },
             links: parsed.contracts || [],
             governance: parsed.governance || state.governance
-          };
-          hydrateFromAnswers(answers);
-          setStatus("Imported manifest JSON.");
-        } else {
-          setStatus("JSON format not recognized.");
+          });
+          setStatus("Imported manifest file.");
+          return;
         }
+        setStatus("JSON format not recognized.");
       } catch (err) {
         setStatus(`Import failed: ${err.message}`);
       }
@@ -785,7 +816,7 @@
     const reader = new FileReader();
     reader.onload = () => {
       byId("artifactText").value = String(reader.result || "");
-      setStatus(`Loaded ${file.name} for artifact-assisted mode.`);
+      setStatus(`Loaded ${file.name}.`);
     };
     reader.readAsText(file);
   }
@@ -795,26 +826,15 @@
   }
 
   function splitCsv(text) {
-    return String(text || "")
-      .split(",")
-      .map((x) => x.trim())
-      .filter(Boolean);
+    return String(text || "").split(",").map((v) => v.trim()).filter(Boolean);
   }
 
   function toKebab(text) {
-    return String(text || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9-]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+    return String(text || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
   }
 
   function escape(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+    return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
   }
 
   function setStatus(message) {
