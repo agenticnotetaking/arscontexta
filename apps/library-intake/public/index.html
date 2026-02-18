@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ars Contexta Library Intake</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="hero">
+    <h1>Library Federation Intake</h1>
+    <p>Collect business context as guided sections, then export versioned JSON for baseline library generation.</p>
+  </header>
+
+  <main class="layout">
+    <aside class="left-nav">
+      <h2>Sections</h2>
+      <nav id="sectionNav"></nav>
+      <div class="card">
+        <h3>Mode</h3>
+        <label><input type="radio" name="mode" value="form" checked> Form Wizard</label>
+        <label><input type="radio" name="mode" value="interview"> Guided Interview</label>
+      </div>
+      <div class="card">
+        <h3>Data</h3>
+        <button id="btnExportAnswers">Download answers.json</button>
+        <button id="btnExportManifest">Download manifest.json</button>
+        <label class="file-input">
+          Import JSON
+          <input type="file" id="importJsonInput" accept=".json">
+        </label>
+        <button id="btnSaveRevision">Save Revision (Server)</button>
+      </div>
+      <div class="card">
+        <h3>Revisions</h3>
+        <button id="btnLoadRevisions">Refresh Revision List</button>
+        <select id="revisionSelect"></select>
+        <button id="btnLoadRevision">Load Selected Revision</button>
+      </div>
+    </aside>
+
+    <section class="content">
+      <section class="step" data-step="program">
+        <h2>1. Program Basics</h2>
+        <p class="why">Why this matters: sets stable IDs and ownership for traceability across revisions.</p>
+        <div class="grid-2">
+          <label>Program Name<input id="programName" type="text" placeholder="Bank Business Function Meta-Graph"></label>
+          <label>Program ID<input id="programId" type="text" placeholder="bank-context-graph"></label>
+          <label>Owner Unit<input id="ownerUnit" type="text" placeholder="Operations Excellence"></label>
+          <label>Target Outcome<input id="targetOutcome" type="text" placeholder="Reduce cross-functional process failures"></label>
+        </div>
+      </section>
+
+      <section class="step" data-step="libraries">
+        <h2>2. Libraries</h2>
+        <p class="why">Why this matters: each library should map to one business function with clear decisions and accountability.</p>
+        <button id="btnAddLibrary">Add Library</button>
+        <div id="librariesContainer"></div>
+      </section>
+
+      <section class="step" data-step="shared">
+        <h2>3. Shared Business Terms</h2>
+        <p class="why">Why this matters: shared terms prevent naming drift across functions.</p>
+        <label>Shared Entities (comma-separated)
+          <input id="sharedEntities" type="text" placeholder="process, control, risk, metric, exception">
+        </label>
+        <label>Shared Relationship Types (comma-separated)
+          <input id="sharedRelationships" type="text" placeholder="depends_on, owned_by, mitigates, measured_by">
+        </label>
+      </section>
+
+      <section class="step" data-step="handoffs">
+        <h2>4. Cross-Library Handoffs</h2>
+        <p class="why">Why this matters: models where work, controls, or escalations cross function boundaries.</p>
+        <button id="btnAddLink">Add Handoff Link</button>
+        <div id="linksContainer"></div>
+      </section>
+
+      <section class="step" data-step="governance">
+        <h2>5. Governance & Controls</h2>
+        <p class="why">Why this matters: adds compliance-grade metadata and lifecycle controls.</p>
+        <div class="grid-2">
+          <label>Classification Baseline
+            <select id="classificationBaseline">
+              <option>public</option>
+              <option>internal</option>
+              <option selected>confidential</option>
+              <option>restricted</option>
+            </select>
+          </label>
+          <label>Review Cadence
+            <select id="reviewCadence">
+              <option>weekly</option>
+              <option selected>monthly</option>
+              <option>quarterly</option>
+            </select>
+          </label>
+          <label>Retention (months)<input id="retentionMonths" type="number" value="36"></label>
+          <label>Change Approval
+            <select id="changeApproval">
+              <option>none</option>
+              <option>single-approver</option>
+              <option selected>dual-approver</option>
+              <option>CAB</option>
+            </select>
+          </label>
+          <label class="full">Required Provenance Fields (comma-separated)
+            <input id="provenanceFields" type="text" value="source_ref,captured_at,owner_role,confidence,effective_from">
+          </label>
+        </div>
+      </section>
+
+      <section class="step" data-step="artifact">
+        <h2>6. Artifact-Assisted Drafting (OpenAI)</h2>
+        <p class="why">Why this matters: jump-start from SOPs/runbooks/incidents and review AI suggestions before applying.</p>
+        <label>Paste artifact text
+          <textarea id="artifactText" rows="8" placeholder="Paste SOP, runbook, policy, or incident summary text..."></textarea>
+        </label>
+        <label class="file-input">
+          Or upload text file
+          <input type="file" id="artifactFileInput" accept=".txt,.md,.csv,.log">
+        </label>
+        <button id="btnSuggestFromArtifact">Generate Suggestions</button>
+        <div id="artifactSuggestions"></div>
+      </section>
+
+      <section class="step" data-step="visual">
+        <h2>7. Visual Mapping Mode</h2>
+        <p class="why">Why this matters: make cross-library links tangible and easier to validate with stakeholders.</p>
+        <div class="map-wrap">
+          <svg id="mapSvg"></svg>
+          <div id="mapBoard"></div>
+        </div>
+      </section>
+
+      <section class="step" data-step="review">
+        <h2>8. Review & Export</h2>
+        <p class="why">Review normalized output before creating baseline libraries.</p>
+        <pre id="manifestPreview"></pre>
+      </section>
+    </section>
+
+    <aside class="right-panel" id="interviewPanel">
+      <h2>Guided Interview</h2>
+      <p id="interviewPrompt"></p>
+      <textarea id="interviewAnswer" rows="4" placeholder="Answer in plain language..."></textarea>
+      <div class="button-row">
+        <button id="btnInterviewApply">Apply Answer</button>
+        <button id="btnInterviewNext">Next Question</button>
+      </div>
+      <small>Interview mode fills the same form model used by export/import.</small>
+      <div id="status"></div>
+    </aside>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
