@@ -14,6 +14,7 @@
       <p>Answer a few plain-language questions. We will turn your answers into a versioned JSON manifest for baseline library generation.</p>
     </div>
     <div class="hero-actions">
+      <button id="btnApplyBankStarter">Use Bank Starter</button>
       <button id="btnExportManifest" class="primary">Download manifest.json</button>
       <button id="btnSaveRevision">Save Revision</button>
     </div>
@@ -29,6 +30,22 @@
       <ol id="stepper" class="stepper"></ol>
     </section>
 
+    <section class="help-panel">
+      <h3>Help and Examples</h3>
+      <p id="helpIntro" class="explain"></p>
+      <div class="help-block">
+        <strong>What to enter</strong>
+        <p id="helpExpected"></p>
+      </div>
+      <div class="help-block">
+        <strong>Good default</strong>
+        <p id="helpDefault"></p>
+      </div>
+      <div class="help-block">
+        <strong>Sample answer</strong>
+        <p id="helpSample"></p>
+      </div>
+    </section>
     <section class="panel" id="panelProgram">
       <h3>Program Basics</h3>
       <p class="explain">This gives your workspace a stable identity and owner.</p>
@@ -166,3 +183,5 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
+

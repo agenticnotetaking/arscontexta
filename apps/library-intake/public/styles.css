@@ -52,6 +52,8 @@ body {
 
 .hero-actions {
   min-width: 220px;
+  display: grid;
+  gap: 8px;
 }
 
 .shell {
@@ -315,3 +317,35 @@ pre {
     grid-template-columns: 1fr;
   }
 }
+
+.help-panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: #fffdf8;
+  margin-bottom: 12px;
+}
+
+.help-panel h3 {
+  margin: 0 0 8px;
+}
+
+.help-block {
+  border: 1px solid #e6e0d0;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 8px;
+  background: #fff;
+}
+
+.help-block p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+summary {
+  cursor: pointer;
+  color: #37545a;
+  font-weight: 600;
+}
+

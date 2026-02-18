@@ -24,6 +24,62 @@
 
   const recommendedEntityChips = ["process", "control", "risk", "metric", "policy", "exception", "system", "role"];
   const recommendedRelationshipChips = ["depends_on", "owned_by", "mitigates", "measured_by", "escalates_to", "feeds"];
+  const helpByStep = {
+    panelProgram: {
+      intro: "Start simple: define who owns this effort and what success looks like.",
+      expected: "Program name, owner team, and one measurable outcome.",
+      def: "Owner team = Operations Excellence",
+      sample: "Reduce payment exception resolution time by 30%."
+    },
+    panelInterview: {
+      intro: "Use this if stakeholders prefer answering prompts instead of forms.",
+      expected: "Short plain-language answers.",
+      def: "One sentence per prompt is enough.",
+      sample: "We need shared context across Payments Ops, Fraud Ops, and Lending Ops."
+    },
+    panelLibraries: {
+      intro: "Each library should represent one business function.",
+      expected: "Name, purpose, and owner role for each function.",
+      def: "Start with 3-5 libraries only.",
+      sample: "payments-ops: handles payment execution and exception triage."
+    },
+    panelTerms: {
+      intro: "Shared terms avoid confusion across teams.",
+      expected: "Common entities and relationship words used in every library.",
+      def: "Entities: process, control, risk, metric, exception",
+      sample: "Relationships: depends_on, owned_by, mitigates, measured_by"
+    },
+    panelHandoffs: {
+      intro: "Capture where work crosses team boundaries.",
+      expected: "From team, to team, and what object is handed off.",
+      def: "Use contract type = handoff unless there is a control-specific flow.",
+      sample: "payments-ops -> fraud-ops | object: high-risk payment exception"
+    },
+    panelArtifact: {
+      intro: "Paste SOPs/runbooks to draft suggestions quickly.",
+      expected: "Readable policy, SOP, or incident text.",
+      def: "Review suggestions before applying.",
+      sample: "Paste an exception management SOP to auto-suggest handoffs."
+    },
+    panelMap: {
+      intro: "Use this view to communicate structure to stakeholders.",
+      expected: "Drag cards so linked teams sit near each other.",
+      def: "Put high-volume teams near center.",
+      sample: "Payments in center, Fraud and Risk adjacent."
+    },
+    panelGovernance: {
+      intro: "Set baseline controls for consistency and auditability.",
+      expected: "Classification, cadence, retention, and provenance fields.",
+      def: "Classification: confidential | Review: monthly | Retention: 36 months",
+      sample: "Required provenance: source_ref,captured_at,owner_role,confidence"
+    },
+    panelReview: {
+      intro: "Validate output before saving and sharing.",
+      expected: "Review manifest preview, save revision, export JSON.",
+      def: "Save a revision before every major change.",
+      sample: "Export manifest.json for baseline generation."
+    }
+  };
 
   const state = {
     currentStep: 0,
@@ -63,7 +119,11 @@
     artifactSuggestions: byId("artifactSuggestions"),
     revisionSelect: byId("revisionSelect"),
     entityChips: byId("entityChips"),
-    relationshipChips: byId("relationshipChips")
+    relationshipChips: byId("relationshipChips"),
+    helpIntro: byId("helpIntro"),
+    helpExpected: byId("helpExpected"),
+    helpDefault: byId("helpDefault"),
+    helpSample: byId("helpSample")
   };
 
   init();
@@ -99,6 +159,7 @@
     ui.stepTitle.textContent = `Step ${current + 1} of ${total}: ${step.title}`;
     ui.stepHint.textContent = step.hint;
     ui.progressBar.style.width = `${((current + 1) / total) * 100}%`;
+    renderHelp(step.id);
 
     steps.forEach((s, idx) => {
       const panel = byId(s.id);
@@ -181,6 +242,7 @@
       }
     });
 
+    byId("btnApplyBankStarter").addEventListener("click", applyBankStarter);
     byId("btnAddLibrary").addEventListener("click", addLibrary);
     byId("btnAddLink").addEventListener("click", addLink);
 
@@ -625,6 +687,109 @@
   function renderInterview() {
     ui.interviewPrompt.textContent = interviewQuestions[state.interviewIndex].prompt;
   }
+
+  function renderHelp(stepId) {
+    const help = helpByStep[stepId] || {
+      intro: "Fill in the fields for this step.",
+      expected: "Required values",
+      def: "Use your current process defaults",
+      sample: "Use clear, concrete wording"
+    };
+    ui.helpIntro.textContent = help.intro;
+    ui.helpExpected.textContent = help.expected;
+    ui.helpDefault.textContent = help.def;
+    ui.helpSample.textContent = help.sample;
+  }
+
+  function applyBankStarter() {
+    state.program = {
+      name: "Bank Business Function Meta-Graph",
+      id: "bank-context-graph",
+      owner_unit: "Operations Excellence",
+      target_outcome: "Reduce cross-functional process failures and decision latency"
+    };
+    state.libraries = [
+      {
+        id: "payments-ops",
+        display_name: "Payments Operations",
+        purpose: "Execute payments and handle payment exceptions.",
+        decisions_supported: ["When to escalate payment exceptions"],
+        inputs: ["sops", "runbooks", "incident-tickets"],
+        outputs: ["process-insights", "control-gap-findings"],
+        owner_role: "payments-ops-manager",
+        weekly_change_volume: "high"
+      },
+      {
+        id: "fraud-ops",
+        display_name: "Fraud Operations",
+        purpose: "Investigate suspicious activity and mitigation actions.",
+        decisions_supported: ["When to hold or release high-risk transactions"],
+        inputs: ["alerts", "cases", "policy"],
+        outputs: ["investigation-findings", "mitigation-actions"],
+        owner_role: "fraud-ops-manager",
+        weekly_change_volume: "high"
+      },
+      {
+        id: "lending-ops",
+        display_name: "Lending Operations",
+        purpose: "Coordinate underwriting and post-booking operational controls.",
+        decisions_supported: ["When to request additional underwriting documentation"],
+        inputs: ["loan-files", "underwriting-guides"],
+        outputs: ["loan-decision-notes", "exception-escalations"],
+        owner_role: "lending-ops-manager",
+        weekly_change_volume: "medium"
+      }
+    ];
+    state.shared_terms = {
+      entities: ["process", "control", "risk", "metric", "exception", "policy"],
+      relationships: ["depends_on", "owned_by", "mitigates", "measured_by", "escalates_to"]
+    };
+    state.links = [
+      {
+        source_library: "payments-ops",
+        target_library: "fraud-ops",
+        contract_type: "escalation",
+        object: "high-risk-payment-exception",
+        trigger_event: "exception.severity == critical",
+        sla_target: "15m",
+        failure_signal: "no_ack_within_sla",
+        required_fields: ["exception_id", "severity", "detected_at", "owner_role"]
+      },
+      {
+        source_library: "lending-ops",
+        target_library: "fraud-ops",
+        contract_type: "control",
+        object: "suspected-application-fraud",
+        trigger_event: "fraud_indicator >= threshold",
+        sla_target: "30m",
+        failure_signal: "no_case_opened",
+        required_fields: ["application_id", "indicator_score", "owner_role"]
+      }
+    ];
+    state.governance = {
+      classification_baseline: "confidential",
+      review_cadence: "monthly",
+      retention_months: 36,
+      change_approval: "dual-approver",
+      required_provenance_fields: ["source_ref", "captured_at", "owner_role", "confidence", "effective_from"]
+    };
+
+    byId("programName").value = state.program.name;
+    byId("programId").value = state.program.id;
+    byId("ownerUnit").value = state.program.owner_unit;
+    byId("targetOutcome").value = state.program.target_outcome;
+    ui.sharedEntities.value = state.shared_terms.entities.join(", ");
+    ui.sharedRelationships.value = state.shared_terms.relationships.join(", ");
+    byId("classificationBaseline").value = state.governance.classification_baseline;
+    byId("reviewCadence").value = state.governance.review_cadence;
+    byId("retentionMonths").value = state.governance.retention_months;
+    byId("changeApproval").value = state.governance.change_approval;
+    byId("provenanceFields").value = state.governance.required_provenance_fields.join(",");
+
+    renderChips();
+    renderAll();
+    setStatus("Bank starter applied. Review each step and adjust for your team.");
+  }
   function buildAnswers() {
     return {
       schema_version: "1.0",
@@ -841,3 +1006,4 @@
     ui.status.textContent = message;
   }
 })();
+
