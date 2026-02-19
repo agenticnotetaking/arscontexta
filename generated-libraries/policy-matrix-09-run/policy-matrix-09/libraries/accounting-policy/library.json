@@ -1,0 +1,21 @@
+{
+  "id": "accounting-policy",
+  "display_name": "Accounting Policy Library",
+  "purpose": "Curate and operationalize policies for Accounting.",
+  "decisions_supported": [
+    "Assess policy impact for Accounting",
+    "Prioritize control changes for Accounting"
+  ],
+  "inputs": [
+    "policy-text",
+    "regulatory-update",
+    "audit-findings"
+  ],
+  "outputs": [
+    "control-requirements",
+    "implementation-guidance",
+    "exceptions-log"
+  ],
+  "owner_role": "policy-owner",
+  "weekly_change_volume": "medium"
+}

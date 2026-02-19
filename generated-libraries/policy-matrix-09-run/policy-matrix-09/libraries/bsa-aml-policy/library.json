@@ -1,0 +1,21 @@
+{
+  "id": "bsa-aml-policy",
+  "display_name": "BSA/AML Policy Library",
+  "purpose": "Curate and operationalize policies for BSA/AML.",
+  "decisions_supported": [
+    "Assess policy impact for BSA/AML",
+    "Prioritize control changes for BSA/AML"
+  ],
+  "inputs": [
+    "policy-text",
+    "regulatory-update",
+    "audit-findings"
+  ],
+  "outputs": [
+    "control-requirements",
+    "implementation-guidance",
+    "exceptions-log"
+  ],
+  "owner_role": "policy-owner",
+  "weekly_change_volume": "medium"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "customer-servicing-core",
+  "title": "Customer Servicing Core",
+  "description": "Baseline library for service requests, complaints, and operational follow-through.",
+  "type": "library",
+  "tags": ["servicing", "customer", "operations"],
+  "library": {
+    "id": "customer-servicing",
+    "display_name": "Customer Servicing",
+    "purpose": "Handle customer requests and complaints while coordinating downstream operations.",
+    "decisions_supported": ["Escalate unresolved complaint", "Route request to responsible operations team"],
+    "inputs": ["service-requests", "complaints", "channel-transcripts"],
+    "outputs": ["resolution-updates", "handoff-tickets", "service-metrics"],
+    "owner_role": "customer-servicing-manager",
+    "weekly_change_volume": "high"
+  },
+  "shared_terms": {
+    "entities": ["request", "complaint", "resolution", "owner", "sla"],
+    "relationships": ["depends_on", "escalates_to", "measured_by"]
+  }
+}

@@ -1,0 +1,562 @@
+{
+  "approved_at": "2026-02-19T18:41:29.370Z",
+  "approved_by": "codex-policy-matrix-bootstrap",
+  "source_revision": "rev-0001.json",
+  "program_id": "policy-matrix-09",
+  "manifest": {
+    "schema_version": "1.0",
+    "program_id": "policy-matrix-09",
+    "revision": "draft",
+    "updated_at": "2026-02-19T18:41:29.3169759Z",
+    "program": {
+      "name": "Policy Matrix 09 Baseline",
+      "owner_unit": "Enterprise Policy",
+      "target_outcome": "Operational policy graph baseline generated from policy_matrix_09"
+    },
+    "defaults": {
+      "processing_depth": "heavy",
+      "automation": "full",
+      "search": "hybrid",
+      "review_cadence": "monthly",
+      "retention_months": 36
+    },
+    "governance": {
+      "classification_baseline": "confidential",
+      "review_cadence": "monthly",
+      "retention_months": 36,
+      "change_approval": "dual-approver",
+      "required_provenance_fields": [
+        "source_ref",
+        "captured_at",
+        "owner_role",
+        "confidence",
+        "effective_from"
+      ]
+    },
+    "libraries": [
+      {
+        "id": "information-technology-policy",
+        "display_name": "Information Technology Policy Library",
+        "purpose": "Curate and operationalize policies for Information Technology.",
+        "decisions_supported": [
+          "Assess policy impact for Information Technology",
+          "Prioritize control changes for Information Technology"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "high"
+      },
+      {
+        "id": "compliance-policy",
+        "display_name": "Compliance Policy Library",
+        "purpose": "Curate and operationalize policies for Compliance.",
+        "decisions_supported": [
+          "Assess policy impact for Compliance",
+          "Prioritize control changes for Compliance"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "treasury-policy",
+        "display_name": "Treasury Policy Library",
+        "purpose": "Curate and operationalize policies for Treasury.",
+        "decisions_supported": [
+          "Assess policy impact for Treasury",
+          "Prioritize control changes for Treasury"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "accounting-policy",
+        "display_name": "Accounting Policy Library",
+        "purpose": "Curate and operationalize policies for Accounting.",
+        "decisions_supported": [
+          "Assess policy impact for Accounting",
+          "Prioritize control changes for Accounting"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "bsa-aml-policy",
+        "display_name": "BSA/AML Policy Library",
+        "purpose": "Curate and operationalize policies for BSA/AML.",
+        "decisions_supported": [
+          "Assess policy impact for BSA/AML",
+          "Prioritize control changes for BSA/AML"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "credit-policy",
+        "display_name": "Credit Policy Library",
+        "purpose": "Curate and operationalize policies for Credit.",
+        "decisions_supported": [
+          "Assess policy impact for Credit",
+          "Prioritize control changes for Credit"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      }
+    ],
+    "ontology": {
+      "entities": [
+        "process",
+        "control",
+        "risk",
+        "policy",
+        "exception",
+        "metric",
+        "governance",
+        "regulatory",
+        "third_party",
+        "consumer_protection",
+        "aml_bsa_ofac",
+        "enterprise_risk",
+        "audit",
+        "capital",
+        "training",
+        "cdd"
+      ],
+      "relationships": [
+        "depends_on",
+        "owned_by",
+        "mitigates",
+        "references",
+        "escalates_to",
+        "cross_ref",
+        "overlap",
+        "theme_hit",
+        "dependency"
+      ]
+    },
+    "contracts": [
+      {
+        "source_library": "compliance-policy",
+        "target_library": "compliance-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "information-technology-policy",
+        "target_library": "information-technology-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "treasury-policy",
+        "target_library": "treasury-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "accounting-policy",
+        "target_library": "accounting-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "credit-policy",
+        "target_library": "compliance-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "treasury-policy",
+        "target_library": "credit-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      }
+    ]
+  },
+  "answers": {
+    "schema_version": "1.0",
+    "captured_at": "2026-02-19T18:41:29.3169759Z",
+    "program": {
+      "name": "Policy Matrix 09 Baseline",
+      "id": "policy-matrix-09",
+      "owner_unit": "Enterprise Policy",
+      "target_outcome": "Operational policy graph baseline generated from policy_matrix_09"
+    },
+    "libraries": [
+      {
+        "id": "information-technology-policy",
+        "display_name": "Information Technology Policy Library",
+        "purpose": "Curate and operationalize policies for Information Technology.",
+        "decisions_supported": [
+          "Assess policy impact for Information Technology",
+          "Prioritize control changes for Information Technology"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "high"
+      },
+      {
+        "id": "compliance-policy",
+        "display_name": "Compliance Policy Library",
+        "purpose": "Curate and operationalize policies for Compliance.",
+        "decisions_supported": [
+          "Assess policy impact for Compliance",
+          "Prioritize control changes for Compliance"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "treasury-policy",
+        "display_name": "Treasury Policy Library",
+        "purpose": "Curate and operationalize policies for Treasury.",
+        "decisions_supported": [
+          "Assess policy impact for Treasury",
+          "Prioritize control changes for Treasury"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "accounting-policy",
+        "display_name": "Accounting Policy Library",
+        "purpose": "Curate and operationalize policies for Accounting.",
+        "decisions_supported": [
+          "Assess policy impact for Accounting",
+          "Prioritize control changes for Accounting"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "bsa-aml-policy",
+        "display_name": "BSA/AML Policy Library",
+        "purpose": "Curate and operationalize policies for BSA/AML.",
+        "decisions_supported": [
+          "Assess policy impact for BSA/AML",
+          "Prioritize control changes for BSA/AML"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "credit-policy",
+        "display_name": "Credit Policy Library",
+        "purpose": "Curate and operationalize policies for Credit.",
+        "decisions_supported": [
+          "Assess policy impact for Credit",
+          "Prioritize control changes for Credit"
+        ],
+        "inputs": [
+          "policy-text",
+          "regulatory-update",
+          "audit-findings"
+        ],
+        "outputs": [
+          "control-requirements",
+          "implementation-guidance",
+          "exceptions-log"
+        ],
+        "owner_role": "policy-owner",
+        "weekly_change_volume": "medium"
+      }
+    ],
+    "shared_terms": {
+      "entities": [
+        "process",
+        "control",
+        "risk",
+        "policy",
+        "exception",
+        "metric",
+        "governance",
+        "regulatory",
+        "third_party",
+        "consumer_protection",
+        "aml_bsa_ofac",
+        "enterprise_risk",
+        "audit",
+        "capital",
+        "training",
+        "cdd"
+      ],
+      "relationships": [
+        "depends_on",
+        "owned_by",
+        "mitigates",
+        "references",
+        "escalates_to",
+        "cross_ref",
+        "overlap",
+        "theme_hit",
+        "dependency"
+      ]
+    },
+    "links": [
+      {
+        "source_library": "compliance-policy",
+        "target_library": "compliance-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "information-technology-policy",
+        "target_library": "information-technology-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "treasury-policy",
+        "target_library": "treasury-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "accounting-policy",
+        "target_library": "accounting-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "credit-policy",
+        "target_library": "compliance-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      },
+      {
+        "source_library": "treasury-policy",
+        "target_library": "credit-policy",
+        "contract_type": "dependency",
+        "object": "policy-reference",
+        "trigger_event": "policy_update_published",
+        "sla_target": "10d",
+        "failure_signal": "dependency_review_missing",
+        "required_fields": [
+          "source_ref",
+          "captured_at",
+          "owner_role",
+          "effective_from"
+        ]
+      }
+    ],
+    "governance": {
+      "classification_baseline": "confidential",
+      "review_cadence": "monthly",
+      "retention_months": 36,
+      "change_approval": "dual-approver",
+      "required_provenance_fields": [
+        "source_ref",
+        "captured_at",
+        "owner_role",
+        "confidence",
+        "effective_from"
+      ]
+    }
+  }
+}

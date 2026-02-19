@@ -1,0 +1,100 @@
+{
+  "id": "bank-cross-function-baseline",
+  "title": "Bank Cross-Function Baseline",
+  "description": "Starter pack spanning core banking operations with shared language and common handoffs.",
+  "type": "pack",
+  "tags": ["starter", "bank", "cross-functional"],
+  "pack": {
+    "program": {
+      "name": "Bank Business Function Meta-Graph",
+      "id": "bank-context-graph",
+      "owner_unit": "Operations Excellence",
+      "target_outcome": "Reduce cross-functional process failures and decision latency"
+    },
+    "libraries": [
+      {
+        "id": "payments-ops",
+        "display_name": "Payments Operations",
+        "purpose": "Execute domestic and international payment flows while handling exceptions.",
+        "decisions_supported": ["When to escalate payment exceptions", "How to reroute failed settlement"],
+        "inputs": ["payment-instructions", "settlement-rules", "runbooks"],
+        "outputs": ["settlement-status", "exception-notices"],
+        "owner_role": "payments-ops-manager",
+        "weekly_change_volume": "high"
+      },
+      {
+        "id": "fraud-ops",
+        "display_name": "Fraud Operations",
+        "purpose": "Investigate suspicious activity and coordinate mitigation actions.",
+        "decisions_supported": ["When to place hold on transaction", "When to release blocked activity"],
+        "inputs": ["alerts", "case-history", "fraud-policy"],
+        "outputs": ["investigation-findings", "mitigation-actions"],
+        "owner_role": "fraud-ops-manager",
+        "weekly_change_volume": "high"
+      },
+      {
+        "id": "lending-ops",
+        "display_name": "Lending Operations",
+        "purpose": "Coordinate underwriting, booking, and post-booking exception handling.",
+        "decisions_supported": ["When to request additional underwriting documents", "When to escalate covenant exceptions"],
+        "inputs": ["loan-files", "underwriting-guides", "servicing-events"],
+        "outputs": ["loan-decision-notes", "exception-escalations"],
+        "owner_role": "lending-ops-manager",
+        "weekly_change_volume": "medium"
+      },
+      {
+        "id": "risk-controls",
+        "display_name": "Risk and Controls",
+        "purpose": "Define and monitor control requirements across operations.",
+        "decisions_supported": ["Which controls require remediation", "When to declare control breach"],
+        "inputs": ["policy-updates", "control-evidence", "audit-findings"],
+        "outputs": ["control-requirements", "remediation-plans"],
+        "owner_role": "risk-controls-lead",
+        "weekly_change_volume": "medium"
+      }
+    ],
+    "shared_terms": {
+      "entities": ["process", "control", "risk", "metric", "exception", "policy", "case", "owner"],
+      "relationships": ["depends_on", "owned_by", "mitigates", "measured_by", "escalates_to", "feeds"]
+    },
+    "links": [
+      {
+        "source_library": "payments-ops",
+        "target_library": "fraud-ops",
+        "contract_type": "escalation",
+        "object": "high-risk-payment-exception",
+        "trigger_event": "exception.severity == critical",
+        "sla_target": "15m",
+        "failure_signal": "no_ack_within_sla",
+        "required_fields": ["exception_id", "severity", "detected_at", "owner_role"]
+      },
+      {
+        "source_library": "fraud-ops",
+        "target_library": "risk-controls",
+        "contract_type": "control",
+        "object": "fraud-control-breach",
+        "trigger_event": "repeat_incidents >= threshold",
+        "sla_target": "1h",
+        "failure_signal": "breach_not_logged",
+        "required_fields": ["case_id", "breach_type", "owner_role"]
+      },
+      {
+        "source_library": "lending-ops",
+        "target_library": "fraud-ops",
+        "contract_type": "handoff",
+        "object": "suspected-application-fraud",
+        "trigger_event": "risk_indicator >= threshold",
+        "sla_target": "30m",
+        "failure_signal": "no_case_opened",
+        "required_fields": ["application_id", "indicator_score", "owner_role"]
+      }
+    ],
+    "governance": {
+      "classification_baseline": "confidential",
+      "review_cadence": "monthly",
+      "retention_months": 36,
+      "change_approval": "dual-approver",
+      "required_provenance_fields": ["source_ref", "captured_at", "owner_role", "confidence", "effective_from"]
+    }
+  }
+}

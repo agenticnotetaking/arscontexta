@@ -1,0 +1,92 @@
+[
+  {
+    "source_library": "compliance-policy",
+    "target_library": "compliance-policy",
+    "contract_type": "dependency",
+    "object": "policy-reference",
+    "trigger_event": "policy_update_published",
+    "sla_target": "10d",
+    "failure_signal": "dependency_review_missing",
+    "required_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "effective_from"
+    ]
+  },
+  {
+    "source_library": "information-technology-policy",
+    "target_library": "information-technology-policy",
+    "contract_type": "dependency",
+    "object": "policy-reference",
+    "trigger_event": "policy_update_published",
+    "sla_target": "10d",
+    "failure_signal": "dependency_review_missing",
+    "required_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "effective_from"
+    ]
+  },
+  {
+    "source_library": "treasury-policy",
+    "target_library": "treasury-policy",
+    "contract_type": "dependency",
+    "object": "policy-reference",
+    "trigger_event": "policy_update_published",
+    "sla_target": "10d",
+    "failure_signal": "dependency_review_missing",
+    "required_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "effective_from"
+    ]
+  },
+  {
+    "source_library": "accounting-policy",
+    "target_library": "accounting-policy",
+    "contract_type": "dependency",
+    "object": "policy-reference",
+    "trigger_event": "policy_update_published",
+    "sla_target": "10d",
+    "failure_signal": "dependency_review_missing",
+    "required_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "effective_from"
+    ]
+  },
+  {
+    "source_library": "credit-policy",
+    "target_library": "compliance-policy",
+    "contract_type": "dependency",
+    "object": "policy-reference",
+    "trigger_event": "policy_update_published",
+    "sla_target": "10d",
+    "failure_signal": "dependency_review_missing",
+    "required_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "effective_from"
+    ]
+  },
+  {
+    "source_library": "treasury-policy",
+    "target_library": "credit-policy",
+    "contract_type": "dependency",
+    "object": "policy-reference",
+    "trigger_event": "policy_update_published",
+    "sla_target": "10d",
+    "failure_signal": "dependency_review_missing",
+    "required_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "effective_from"
+    ]
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "id": "risk-controls-core",
+  "title": "Risk and Controls Core",
+  "description": "Baseline library for policy-to-control mapping, remediation tracking, and control governance.",
+  "type": "library",
+  "tags": ["risk", "controls", "governance"],
+  "library": {
+    "id": "risk-controls",
+    "display_name": "Risk and Controls",
+    "purpose": "Define control baselines and track remediation against policy obligations.",
+    "decisions_supported": ["Prioritize remediation", "Declare control breach"],
+    "inputs": ["policy-updates", "control-testing", "audit-findings"],
+    "outputs": ["control-standards", "breach-reports", "remediation-priorities"],
+    "owner_role": "risk-controls-lead",
+    "weekly_change_volume": "medium"
+  },
+  "shared_terms": {
+    "entities": ["control", "risk", "policy", "evidence", "breach"],
+    "relationships": ["mitigates", "measured_by", "owned_by"]
+  }
+}

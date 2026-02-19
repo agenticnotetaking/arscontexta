@@ -1,0 +1,21 @@
+{
+  "id": "payments-ops-core",
+  "title": "Payments Operations Core",
+  "description": "Baseline library for payment execution, settlement, and exception handling.",
+  "type": "library",
+  "tags": ["payments", "operations", "exceptions"],
+  "library": {
+    "id": "payments-ops",
+    "display_name": "Payments Operations",
+    "purpose": "Execute payment flows and resolve failed/returned transactions.",
+    "decisions_supported": ["Escalate settlement exceptions", "Select reroute path for failed transactions"],
+    "inputs": ["payment-instructions", "settlement-status", "ops-runbooks"],
+    "outputs": ["exception-cases", "settlement-decisions", "ops-metrics"],
+    "owner_role": "payments-ops-manager",
+    "weekly_change_volume": "high"
+  },
+  "shared_terms": {
+    "entities": ["payment", "exception", "settlement", "queue", "owner"],
+    "relationships": ["depends_on", "escalates_to", "measured_by"]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "entities": [
+    "process",
+    "control",
+    "risk",
+    "policy",
+    "exception",
+    "metric",
+    "governance",
+    "regulatory",
+    "third_party",
+    "consumer_protection",
+    "aml_bsa_ofac",
+    "enterprise_risk",
+    "audit",
+    "capital",
+    "training",
+    "cdd"
+  ],
+  "relationships": [
+    "depends_on",
+    "owned_by",
+    "mitigates",
+    "references",
+    "escalates_to",
+    "cross_ref",
+    "overlap",
+    "theme_hit",
+    "dependency"
+  ]
+}
