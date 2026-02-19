@@ -15,6 +15,9 @@ Standalone intake app for building federated business-function library manifests
 9. Revision save/load and approval workflow
 10. Retrieve latest approved libraries and insert handoffs via approved-picker modal
 11. One-click baseline generation from selected approved set
+12. Policy matrix integration (`policy_matrix_09`) with preview + apply-defaults flow
+13. SME interview question set endpoint and in-app rendering
+14. Transcript-to-prefill generation via OpenAI and one-click apply
 
 ## Run
 
@@ -32,9 +35,22 @@ Use environment variables only:
 ```bash
 set OPENAI_API_KEY=your_key_here
 set OPENAI_MODEL=gpt-4.1-mini
+set POLICY_MATRIX_DIR=C:\Temp\NodeJS\out\policy_matrix_09
+set INTAKE_JSON_BODY_LIMIT_BYTES=20971520
+set POLICY_MATRIX_REL_SCAN_ROWS=75000
 ```
 
 If no key is set, artifact-assisted mode remains available but AI suggestion requests return a clear error and manual mode still works.
+
+Large uploads are truncated client-side before AI submission to avoid payload errors, and the server now returns explicit `413 payload_too_large` when request bodies exceed configured limits.
+
+## Policy Matrix Source
+
+By default the server reads policy matrix artifacts from:
+
+- `C:\Temp\NodeJS\out\policy_matrix_09`
+
+You can override with `POLICY_MATRIX_DIR`. The summary endpoint computes top groups/themes/relationships and exposes generated starter defaults for libraries, shared terms, links, and governance.
 
 ## Revision and Approval Storage
 
@@ -60,6 +76,9 @@ API endpoints:
 - `GET /api/approved/catalog`
 - `GET /api/approved/catalog?includeManifest=1`
 - `POST /api/approved/generate-baseline`
+- `GET /api/sme/questions`
+- `GET /api/policy-matrix/summary`
+- `POST /api/ai/transcript-prefill`
 
 ## Codex Automation
 

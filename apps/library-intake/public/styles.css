@@ -248,6 +248,27 @@ button.primary:hover {
   font-size: 12px;
   background: #fbfbfe;
 }
+#smeQuestionList {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+#smeQuestionList li {
+  margin-bottom: 8px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+#policyMatrixInfo,
+#transcriptInfo {
+  margin-top: 8px;
+}
+
+#policyMatrixPreview,
+#transcriptPrefillPreview {
+  background: #f8fbff;
+  border-color: #d5dfee;
+}
 .row {
   display: flex;
   gap: 10px;

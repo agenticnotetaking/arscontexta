@@ -152,6 +152,9 @@
     templateCatalog: [],
     templateDetails: {},
     approvedCatalog: [],
+    policy_matrix_summary: null,
+    transcript_prefill: null,
+    sme_questions: [],
     program: { name: "", id: "", owner_unit: "", target_outcome: "" },
     libraries: [],
     shared_terms: { entities: [], relationships: [] },
@@ -205,7 +208,12 @@
     approvedCatalogSelect: byId("approvedCatalogSelect"),
     approvedSourceSelect: byId("approvedSourceSelect"),
     approvedTargetSelect: byId("approvedTargetSelect"),
-    approvedModalInfo: byId("approvedModalInfo")
+    approvedModalInfo: byId("approvedModalInfo"),
+    smeQuestionList: byId("smeQuestionList"),
+    policyMatrixInfo: byId("policyMatrixInfo"),
+    policyMatrixPreview: byId("policyMatrixPreview"),
+    transcriptInfo: byId("transcriptInfo"),
+    transcriptPrefillPreview: byId("transcriptPrefillPreview")
   };
 
   init();
@@ -219,6 +227,7 @@
     renderAll();
     loadTemplateList();
     loadApprovedCatalogs(false);
+    loadSmeQuestions();
   }
 
   function buildStepper() {
@@ -352,6 +361,8 @@
     byId("btnLoadApprovedLibraries").addEventListener("click", () => loadApproved(false));
     byId("btnLoadApprovedWithLinks").addEventListener("click", () => loadApproved(true));
     byId("btnGenerateFromApproved").addEventListener("click", generateBaselineFromApproved);
+    byId("btnLoadPolicyMatrixSummary").addEventListener("click", loadPolicyMatrixSummary);
+    byId("btnApplyPolicyMatrixDefaults").addEventListener("click", applyPolicyMatrixDefaults);
 
     byId("btnExportAnswers").addEventListener("click", () => downloadJson("answers.json", buildAnswers()));
     byId("btnExportManifest").addEventListener("click", () => downloadJson("manifest.json", buildManifest()));
@@ -361,12 +372,15 @@
     byId("btnLoadRevisions").addEventListener("click", loadRevisionList);
     byId("btnLoadRevision").addEventListener("click", loadRevision);
     byId("btnApproveCurrent").addEventListener("click", approveCurrentRevision);
-
     byId("btnSuggestFromArtifact").addEventListener("click", requestArtifactSuggestions);
     byId("artifactFileInput").addEventListener("change", readArtifactFile);
+    byId("smeTranscriptFileInput").addEventListener("change", readTranscriptFile);
+    byId("btnGenerateFromTranscript").addEventListener("click", requestTranscriptPrefill);
+    byId("btnApplyTranscriptPrefill").addEventListener("click", applyTranscriptPrefill);
 
     byId("btnInterviewApply").addEventListener("click", applyInterviewAnswer);
     byId("btnInterviewNext").addEventListener("click", nextInterviewQuestion);
+    byId("btnRefreshSmeQuestions").addEventListener("click", loadSmeQuestions);
 
     byId("importJsonInput").addEventListener("change", importJson);
 
@@ -653,24 +667,32 @@
   }
 
   async function requestArtifactSuggestions() {
-    const artifactText = byId("artifactText").value.trim();
-    if (!artifactText) {
+    const rawArtifactText = byId("artifactText").value.trim();
+    if (!rawArtifactText) {
       setStatus("Paste or upload source text first.");
       return;
     }
+
+    const clipped = clipText(rawArtifactText, 120000);
+    if (clipped.clipped) {
+      byId("artifactText").value = clipped.text;
+    }
+
     setStatus("Generating AI suggestions...");
 
     try {
       const resp = await fetch("/api/ai/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ artifactText, currentLibraries: state.libraries.map((l) => l.id) })
+        body: JSON.stringify({ artifactText: clipped.text, currentLibraries: state.libraries.map((l) => l.id) })
       });
       const payload = await resp.json();
-      if (!resp.ok) throw new Error(payload.error || "suggestion_failed");
+      if (!resp.ok) {
+        throw new Error(payload.detail || payload.error || "suggestion_failed");
+      }
       state.artifact_suggestions = payload.data;
       renderSuggestions();
-      setStatus("Suggestions ready. Apply only what looks right.");
+      setStatus(clipped.clipped ? "Suggestions ready (input was truncated)." : "Suggestions ready. Apply only what looks right.");
     } catch (err) {
       setStatus(`Suggestion failed: ${err.message}`);
     }
@@ -1132,15 +1154,249 @@
     reader.readAsText(file);
   }
 
-  function readArtifactFile(event) {
+  function readTextFileWithLimit(file, maxBytes) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(String(reader.result || ""));
+      };
+      reader.onerror = () => reject(new Error("file_read_failed"));
+
+      const sizeLimit = Number(maxBytes || 0);
+      const shouldSlice = sizeLimit > 0 && file.size > sizeLimit;
+      const source = shouldSlice ? file.slice(0, sizeLimit) : file;
+      reader.readAsText(source);
+    });
+  }
+
+  function clipText(text, maxChars) {
+    const raw = String(text || "");
+    const limit = Number(maxChars || 0);
+    if (!limit || raw.length <= limit) {
+      return { text: raw, clipped: false };
+    }
+    return {
+      text: raw.slice(0, limit),
+      clipped: true
+    };
+  }
+
+  async function readArtifactFile(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      byId("artifactText").value = String(reader.result || "");
-      setStatus(`Loaded ${file.name}.`);
-    };
-    reader.readAsText(file);
+    try {
+      const loaded = await readTextFileWithLimit(file, 4 * 1024 * 1024);
+      const clipped = clipText(loaded, 200000);
+      byId("artifactText").value = clipped.text;
+      if (clipped.clipped || file.size > 4 * 1024 * 1024) {
+        setStatus(`Loaded ${file.name} (truncated for AI processing).`);
+      } else {
+        setStatus(`Loaded ${file.name}.`);
+      }
+    } catch (err) {
+      setStatus(`Could not read artifact file: ${err.message}`);
+    }
+  }
+
+  async function readTranscriptFile(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    try {
+      const loaded = await readTextFileWithLimit(file, 4 * 1024 * 1024);
+      const clipped = clipText(loaded, 220000);
+      byId("smeTranscriptText").value = clipped.text;
+      ui.transcriptInfo.textContent = clipped.clipped || file.size > 4 * 1024 * 1024
+        ? `Loaded ${file.name}. Content was truncated for processing.`
+        : `Loaded ${file.name}.`;
+      setStatus("Transcript loaded.");
+    } catch (err) {
+      setStatus(`Could not read transcript file: ${err.message}`);
+    }
+  }
+
+  async function requestTranscriptPrefill() {
+    const transcriptRaw = byId("smeTranscriptText").value.trim();
+    if (!transcriptRaw) {
+      setStatus("Paste or upload transcript text first.");
+      return;
+    }
+
+    const clipped = clipText(transcriptRaw, 140000);
+    try {
+      setStatus("Generating transcript prefill...");
+      const resp = await fetch("/api/ai/transcript-prefill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcriptText: clipped.text,
+          currentDraft: buildAnswers()
+        })
+      });
+      const payload = await resp.json();
+      if (!resp.ok) {
+        throw new Error(payload.detail || payload.error || "transcript_prefill_failed");
+      }
+
+      state.transcript_prefill = payload.prefill || null;
+      ui.transcriptPrefillPreview.textContent = JSON.stringify(state.transcript_prefill || {}, null, 2);
+      ui.transcriptInfo.textContent = clipped.clipped
+        ? "Transcript analyzed from truncated input. Review assumptions before applying."
+        : "Transcript analyzed. Review before applying.";
+      setStatus("Transcript prefill ready.");
+    } catch (err) {
+      ui.transcriptInfo.textContent = "";
+      ui.transcriptPrefillPreview.textContent = "";
+      setStatus(`Transcript prefill failed: ${err.message}`);
+    }
+  }
+
+  function applyTranscriptPrefill() {
+    const prefill = state.transcript_prefill;
+    if (!prefill) {
+      setStatus("Generate transcript prefill first.");
+      return;
+    }
+
+    if (prefill.program) {
+      state.program = {
+        ...state.program,
+        name: prefill.program.name || state.program.name,
+        id: toKebab(prefill.program.id || state.program.id || prefill.program.name || ""),
+        owner_unit: prefill.program.owner_unit || state.program.owner_unit,
+        target_outcome: prefill.program.target_outcome || state.program.target_outcome
+      };
+    }
+
+    if (Array.isArray(prefill.libraries)) {
+      prefill.libraries.forEach((lib) => upsertLibrary(normalizeLibrary(lib)));
+    }
+
+    if (prefill.shared_terms) {
+      mergeSharedTerms(prefill.shared_terms);
+    }
+
+    if (Array.isArray(prefill.links)) {
+      mergeLinks(prefill.links);
+    }
+
+    if (prefill.governance) {
+      state.governance = {
+        ...state.governance,
+        ...prefill.governance,
+        required_provenance_fields: uniqueStrings(
+          Array.isArray(prefill.governance.required_provenance_fields)
+            ? prefill.governance.required_provenance_fields
+            : state.governance.required_provenance_fields
+        )
+      };
+    }
+
+    hydrateDomFromState();
+    renderChips();
+    renderAll();
+
+    if (Array.isArray(prefill.confidence_notes) && prefill.confidence_notes.length) {
+      ui.transcriptInfo.textContent = `Applied transcript prefill with ${prefill.confidence_notes.length} assumption note(s).`;
+    } else {
+      ui.transcriptInfo.textContent = "Applied transcript prefill.";
+    }
+    setStatus("Applied transcript prefill to the draft.");
+  }
+
+  async function loadSmeQuestions() {
+    try {
+      const resp = await fetch("/api/sme/questions");
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "sme_questions_failed");
+      state.sme_questions = Array.isArray(payload.questions) ? payload.questions : [];
+      renderSmeQuestions();
+    } catch (err) {
+      state.sme_questions = [];
+      renderSmeQuestions();
+      setStatus(`Could not load SME questions: ${err.message}`);
+    }
+  }
+
+  function renderSmeQuestions() {
+    if (!ui.smeQuestionList) return;
+    const fallback = interviewQuestions.map((q, idx) => ({
+      section: "Interview",
+      prompt: `${idx + 1}. ${q.prompt}`
+    }));
+    const list = state.sme_questions.length ? state.sme_questions : fallback;
+    ui.smeQuestionList.innerHTML = list
+      .map((q) => `<li><strong>${escape(q.section || "Interview")}</strong>: ${escape(q.prompt || "")}</li>`)
+      .join("");
+  }
+
+  async function loadPolicyMatrixSummary() {
+    try {
+      setStatus("Loading policy matrix context...");
+      const resp = await fetch("/api/policy-matrix/summary");
+      const payload = await resp.json();
+      if (!resp.ok) throw new Error(payload.error || "policy_matrix_summary_failed");
+      state.policy_matrix_summary = payload;
+      ui.policyMatrixPreview.textContent = JSON.stringify(payload, null, 2);
+      if (payload.available) {
+        ui.policyMatrixInfo.textContent = `Loaded policy matrix from ${payload.source_dir}. Policies: ${(payload.counts && payload.counts.policies) || 0}.`;
+        setStatus("Policy matrix summary loaded.");
+      } else {
+        ui.policyMatrixInfo.textContent = payload.error || "Policy matrix not available.";
+        setStatus("Policy matrix is not available at the configured path.");
+      }
+    } catch (err) {
+      ui.policyMatrixInfo.textContent = "";
+      ui.policyMatrixPreview.textContent = "";
+      setStatus(`Could not load policy matrix summary: ${err.message}`);
+    }
+  }
+
+  async function applyPolicyMatrixDefaults() {
+    if (!state.policy_matrix_summary || !state.policy_matrix_summary.defaults) {
+      await loadPolicyMatrixSummary();
+    }
+
+    const defaults = state.policy_matrix_summary && state.policy_matrix_summary.defaults;
+    if (!defaults) {
+      setStatus("Policy matrix defaults not available.");
+      return;
+    }
+
+    if (Array.isArray(defaults.libraries)) {
+      defaults.libraries.forEach((lib) => upsertLibrary(normalizeLibrary(lib)));
+    }
+
+    if (defaults.shared_terms) {
+      mergeSharedTerms(defaults.shared_terms);
+    }
+
+    if (Array.isArray(defaults.links)) {
+      mergeLinks(defaults.links);
+    }
+
+    if (defaults.governance) {
+      state.governance = {
+        ...state.governance,
+        ...defaults.governance,
+        required_provenance_fields: uniqueStrings(
+          Array.isArray(defaults.governance.required_provenance_fields)
+            ? defaults.governance.required_provenance_fields
+            : state.governance.required_provenance_fields
+        )
+      };
+    }
+
+    if (!state.program.name) {
+      state.program.name = "Policy Matrix Federation";
+    }
+    if (!state.program.id) {
+      state.program.id = "policy-matrix-federation";
+    }
+
+    hydrateDomFromState();
+    renderChips();
+    renderAll();
+    setStatus("Applied policy matrix defaults to the current draft.");
   }
 
 

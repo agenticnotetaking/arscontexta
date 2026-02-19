@@ -75,6 +75,14 @@
         <button id="btnInterviewApply" class="primary">Apply This Answer</button>
         <button id="btnInterviewNext">Next Prompt</button>
       </div>
+      <div class="template-box">
+        <strong>SME Interview Question Set</strong>
+        <p class="micro">Use these questions with a subject-matter expert, then upload the transcript in the AI section.</p>
+        <ol id="smeQuestionList"></ol>
+        <div class="row tools">
+          <button id="btnRefreshSmeQuestions">Refresh SME Questions</button>
+        </div>
+      </div>
     </section>
 
     <section class="panel" id="panelLibraries">
@@ -98,6 +106,12 @@
         <p id="templateInfo" class="micro"></p>
         <pre id="templatePreview" class="template-preview"></pre>
       </div>
+      <div class="row tools">
+        <button id="btnLoadPolicyMatrixSummary">Preview Policy Matrix Context</button>
+        <button id="btnApplyPolicyMatrixDefaults">Apply Policy Matrix Defaults</button>
+      </div>
+      <p id="policyMatrixInfo" class="micro"></p>
+      <pre id="policyMatrixPreview" class="template-preview"></pre>
       <div class="row tools">
         <button id="btnRefreshApprovedCatalogs">Refresh Approved Sets</button>
       </div>
@@ -151,6 +165,22 @@
       </label>
       <button id="btnSuggestFromArtifact" class="primary">Generate AI Suggestions</button>
       <div id="artifactSuggestions"></div>
+      <div class="template-box">
+        <strong>SME Transcript Intake</strong>
+        <p class="micro">Upload SME interview transcript and auto-generate pre-populated answers.</p>
+        <label>SME transcript text
+          <textarea id="smeTranscriptText" rows="8" placeholder="Paste transcript text or upload a transcript file..."></textarea>
+        </label>
+        <label class="file-input">Upload transcript file
+          <input type="file" id="smeTranscriptFileInput" accept=".txt,.md,.csv,.log">
+        </label>
+        <div class="row tools">
+          <button id="btnGenerateFromTranscript" class="primary">Generate Pre-Populated Answers</button>
+          <button id="btnApplyTranscriptPrefill">Apply Transcript Results</button>
+        </div>
+        <p id="transcriptInfo" class="micro"></p>
+        <pre id="transcriptPrefillPreview" class="template-preview"></pre>
+      </div>
     </section>
 
     <section class="panel" id="panelMap">
