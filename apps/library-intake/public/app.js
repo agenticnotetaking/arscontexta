@@ -150,6 +150,7 @@
     interviewIndex: 0,
     lastSavedRevision: "",
     templateCatalog: [],
+    templateDetails: {},
     approvedCatalog: [],
     program: { name: "", id: "", owner_unit: "", target_outcome: "" },
     libraries: [],
@@ -194,7 +195,10 @@
     helpPitfalls: byId("helpPitfalls"),
     templateSelect: byId("templateSelect"),
     templateInfo: byId("templateInfo"),
+    templatePreview: byId("templatePreview"),
     approvedInfo: byId("approvedInfo"),
+    baselineOutputDir: byId("baselineOutputDir"),
+    baselineInfo: byId("baselineInfo"),
     approvedProgramSelect: byId("approvedProgramSelect"),
     approvedLinkModal: byId("approvedLinkModal"),
     approvedModalBackdrop: byId("approvedModalBackdrop"),
@@ -342,10 +346,12 @@
     byId("btnRefreshTemplates").addEventListener("click", loadTemplateList);
     byId("btnTemplateLoadMerge").addEventListener("click", () => applySelectedTemplate("merge"));
     byId("btnTemplateLoadReplace").addEventListener("click", () => applySelectedTemplate("replace"));
+    byId("btnTemplatePreview").addEventListener("click", previewSelectedTemplate);
 
     byId("btnRefreshApprovedCatalogs").addEventListener("click", () => loadApprovedCatalogs(false));
     byId("btnLoadApprovedLibraries").addEventListener("click", () => loadApproved(false));
     byId("btnLoadApprovedWithLinks").addEventListener("click", () => loadApproved(true));
+    byId("btnGenerateFromApproved").addEventListener("click", generateBaselineFromApproved);
 
     byId("btnExportAnswers").addEventListener("click", () => downloadJson("answers.json", buildAnswers()));
     byId("btnExportManifest").addEventListener("click", () => downloadJson("manifest.json", buildManifest()));
@@ -364,7 +370,10 @@
 
     byId("importJsonInput").addEventListener("change", importJson);
 
-    ui.templateSelect.addEventListener("change", renderTemplateInfo);
+    ui.templateSelect.addEventListener("change", () => {
+      renderTemplateInfo();
+      ui.templatePreview.textContent = "";
+    });
 
     ui.approvedCatalogSelect.addEventListener("change", renderApprovedModalChoices);
     ui.approvedModalBackdrop.addEventListener("click", closeApprovedModal);
@@ -1012,6 +1021,41 @@
     setStatus(includeLinks ? "Loaded approved libraries and handoffs." : "Loaded approved libraries.");
   }
 
+
+  async function generateBaselineFromApproved() {
+    let selected = getSelectedApprovedCatalog();
+    if (!selected) {
+      await loadApprovedCatalogs(false);
+      selected = getSelectedApprovedCatalog();
+    }
+
+    if (!selected) {
+      setStatus("No approved set selected for baseline generation.");
+      return;
+    }
+
+    const outputDir = String(ui.baselineOutputDir.value || "generated-libraries").trim() || "generated-libraries";
+
+    try {
+      setStatus("Generating baseline from approved set...");
+      const resp = await fetch("/api/approved/generate-baseline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: selected.key, outputDir })
+      });
+      const payload = await resp.json();
+      if (!resp.ok) {
+        throw new Error(payload.error || "baseline_generation_failed");
+      }
+
+      const result = payload.result || {};
+      ui.baselineInfo.textContent = `Generated ${result.libraries_count || 0} libraries at ${result.base_dir_relative || "generated output"}.`;
+      setStatus(`Baseline generated from approved ${selected.program_id} ${selected.revision}.`);
+    } catch (err) {
+      ui.baselineInfo.textContent = "";
+      setStatus(`Could not generate baseline: ${err.message}`);
+    }
+  }
   async function loadRevisionList() {
     const programId = state.program.id || toKebab(state.program.name) || "program";
     const resp = await fetch(`/api/revisions/${encodeURIComponent(programId)}`);
@@ -1106,7 +1150,9 @@
       const payload = await resp.json();
       if (!resp.ok) throw new Error(payload.error || "template_list_failed");
       state.templateCatalog = Array.isArray(payload.templates) ? payload.templates : [];
+      state.templateDetails = {};
       renderTemplateSelect();
+      ui.templatePreview.textContent = "";
       if (state.templateCatalog.length) {
         setStatus(`Loaded ${state.templateCatalog.length} template(s).`);
       }
@@ -1117,6 +1163,7 @@
       opt.textContent = "Templates unavailable";
       ui.templateSelect.appendChild(opt);
       ui.templateInfo.textContent = "";
+      ui.templatePreview.textContent = "";
       setStatus(`Could not load templates: ${err.message}`);
     }
   }
@@ -1129,6 +1176,7 @@
       opt.textContent = "No templates found";
       ui.templateSelect.appendChild(opt);
       ui.templateInfo.textContent = "";
+      ui.templatePreview.textContent = "";
       return;
     }
 
@@ -1145,6 +1193,7 @@
     const selected = state.templateCatalog.find((x) => x.id === ui.templateSelect.value) || state.templateCatalog[0];
     if (!selected) {
       ui.templateInfo.textContent = "";
+      ui.templatePreview.textContent = "";
       return;
     }
     if (ui.templateSelect.value !== selected.id) {
@@ -1154,6 +1203,40 @@
     ui.templateInfo.textContent = `${selected.description || "No description"}${tags}`;
   }
 
+
+  async function fetchTemplateById(templateId) {
+    const id = String(templateId || "").trim();
+    if (!id) return null;
+    if (state.templateDetails[id]) {
+      return state.templateDetails[id];
+    }
+
+    const resp = await fetch(`/api/templates/bank/${encodeURIComponent(id)}`);
+    const payload = await resp.json();
+    if (!resp.ok) {
+      throw new Error(payload.error || "template_load_failed");
+    }
+
+    state.templateDetails[id] = payload.template || null;
+    return state.templateDetails[id];
+  }
+
+  async function previewSelectedTemplate() {
+    const templateId = ui.templateSelect.value;
+    if (!templateId) {
+      setStatus("Select a template first.");
+      return;
+    }
+
+    try {
+      const template = await fetchTemplateById(templateId);
+      ui.templatePreview.textContent = JSON.stringify(template || {}, null, 2);
+      setStatus(`Showing preview for ${templateId}.`);
+    } catch (err) {
+      ui.templatePreview.textContent = "";
+      setStatus(`Could not preview template: ${err.message}`);
+    }
+  }
   async function applySelectedTemplate(mode) {
     const templateId = ui.templateSelect.value;
     if (!templateId) {
@@ -1162,10 +1245,7 @@
     }
 
     try {
-      const resp = await fetch(`/api/templates/bank/${encodeURIComponent(templateId)}`);
-      const payload = await resp.json();
-      if (!resp.ok) throw new Error(payload.error || "template_load_failed");
-      const template = payload.template || {};
+      const template = await fetchTemplateById(templateId) || {};
 
       if (template.type === "pack") {
         applyPackTemplate(template.pack || {}, mode);
@@ -1261,6 +1341,7 @@
       opt.textContent = "No approved sets found";
       ui.approvedProgramSelect.appendChild(opt);
       ui.approvedInfo.textContent = "No approved libraries available yet.";
+      ui.baselineInfo.textContent = "";
       setStatus(`Could not load approved sets: ${err.message}`);
       return [];
     }
@@ -1276,6 +1357,7 @@
       opt.textContent = "No approved sets found";
       ui.approvedProgramSelect.appendChild(opt);
       ui.approvedInfo.textContent = "No approved libraries available yet.";
+      ui.baselineInfo.textContent = "";
       return;
     }
 

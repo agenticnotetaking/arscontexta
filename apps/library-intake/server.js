@@ -49,6 +49,10 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
 }
 
+function writeText(filePath, data) {
+  fs.writeFileSync(filePath, data, "utf8");
+}
+
 function sendJson(res, statusCode, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(statusCode, {
@@ -274,6 +278,103 @@ function buildApprovedCatalog(includeManifest) {
     .filter(Boolean)
     .sort((a, b) => String(b.approved_at || "").localeCompare(String(a.approved_at || "")));
 }
+
+function resolveOutputRoot(outputDir) {
+  const requested = String(outputDir || "generated-libraries").trim() || "generated-libraries";
+  const absolute = path.resolve(repoRoot, requested);
+  const normalizedRepo = path.normalize(repoRoot + path.sep);
+  const normalizedAbsolute = path.normalize(absolute);
+  if (!normalizedAbsolute.startsWith(normalizedRepo) && normalizedAbsolute !== path.normalize(repoRoot)) {
+    return null;
+  }
+  ensureDir(absolute);
+  return {
+    requested,
+    absolute,
+    relative: path.relative(repoRoot, absolute).replace(/\\/g, "/") || "."
+  };
+}
+
+function generateBaselineScaffold(manifest, outRoot) {
+  const programId = safeProgramId(manifest && manifest.program_id ? manifest.program_id : "program");
+  const baseDir = path.join(outRoot, programId);
+  ensureDir(baseDir);
+  ensureDir(path.join(baseDir, "libraries"));
+  ensureDir(path.join(baseDir, "graph"));
+  ensureDir(path.join(baseDir, "ops", "federation"));
+
+  writeJson(path.join(baseDir, "ops", "federation", "config.json"), {
+    schema_version: manifest && manifest.schema_version ? manifest.schema_version : "1.0",
+    mode: "library-federation",
+    program_id: programId,
+    defaults: manifest && manifest.defaults ? manifest.defaults : {},
+    governance: manifest && manifest.governance ? manifest.governance : {}
+  });
+
+  writeJson(path.join(baseDir, "graph", "ontology.json"), (manifest && manifest.ontology) || {});
+  writeJson(path.join(baseDir, "graph", "contracts.json"), (manifest && manifest.contracts) || []);
+
+  const libraries = Array.isArray(manifest && manifest.libraries) ? manifest.libraries : [];
+  libraries.forEach((lib) => {
+    const libId = safeProgramId(lib && lib.id ? lib.id : "library");
+    const libDir = path.join(baseDir, "libraries", libId);
+    ensureDir(libDir);
+    ensureDir(path.join(libDir, "processes"));
+    ensureDir(path.join(libDir, "intake"));
+    ensureDir(path.join(libDir, "retired"));
+    ensureDir(path.join(libDir, "ops"));
+    writeJson(path.join(libDir, "library.json"), lib || {});
+    writeText(
+      path.join(libDir, "index.md"),
+      [
+        "---",
+        `description: ${(lib && lib.purpose) || ""}`,
+        "type: moc",
+        "---",
+        `# ${(lib && (lib.display_name || lib.id)) || "Library"}`,
+        "",
+        "## Decisions Supported",
+        ...((lib && lib.decisions_supported) || []).map((d) => `- ${d}`)
+      ].join("\n")
+    );
+  });
+
+  return {
+    program_id: programId,
+    base_dir_relative: path.relative(repoRoot, baseDir).replace(/\\/g, "/"),
+    libraries_count: libraries.length,
+    output_root_relative: path.relative(repoRoot, outRoot).replace(/\\/g, "/")
+  };
+}
+
+function resolveApprovedForGeneration(payload) {
+  const key = String(payload && payload.key ? payload.key : "").trim();
+  if (key) {
+    const catalog = buildApprovedCatalog(true);
+    const match = catalog.find((item) => item.key === key);
+    if (match && match.data && match.data.manifest) {
+      return match;
+    }
+  }
+
+  const programId = safeProgramId(payload && payload.programId ? payload.programId : "");
+  if (programId && programId !== "program") {
+    const latest = buildApprovedLatest(programId);
+    if (latest && latest.data && latest.data.manifest) {
+      return {
+        key: `${latest.program_id}::${latest.revision}`,
+        program_id: latest.program_id,
+        revision: latest.revision,
+        approved_at: latest.approved_at,
+        approved_by: latest.approved_by,
+        data: latest.data
+      };
+    }
+  }
+
+  const fallback = buildApprovedCatalog(true)[0];
+  return fallback && fallback.data && fallback.data.manifest ? fallback : null;
+}
 function approveRevision(payload) {
   const programId = safeProgramId(payload.programId);
   const revision = String(payload.revision || "").trim();
@@ -399,6 +500,40 @@ async function handleApi(req, res, urlObj) {
   if (req.method === "GET" && pathname === "/api/approved/catalog") {
     const includeManifest = urlObj.searchParams.get("includeManifest") === "1";
     return sendJson(res, 200, { items: buildApprovedCatalog(includeManifest) });
+  }
+
+  if (req.method === "POST" && pathname === "/api/approved/generate-baseline") {
+    const payload = await collectJson(req);
+    const approved = resolveApprovedForGeneration(payload || {});
+    if (!approved || !approved.data || !approved.data.manifest) {
+      return sendJson(res, 404, { error: "approved manifest not found" });
+    }
+
+    const output = resolveOutputRoot(payload && payload.outputDir);
+    if (!output) {
+      return sendJson(res, 400, { error: "outputDir must remain inside the repository" });
+    }
+
+    const result = generateBaselineScaffold(approved.data.manifest, output.absolute);
+    return sendJson(res, 200, {
+      ok: true,
+      source: {
+        key: approved.key,
+        program_id: approved.program_id,
+        revision: approved.revision,
+        approved_at: approved.approved_at
+      },
+      output: {
+        requested: output.requested,
+        relative: output.relative
+      },
+      result,
+      codex_next_steps: [
+        `git add ${result.base_dir_relative}`,
+        `git commit -m "Generate baseline from approved ${approved.program_id} ${approved.revision}"`,
+        "git push"
+      ]
+    });
   }
 
   if (req.method === "GET" && pathname === "/api/approved/latest") {

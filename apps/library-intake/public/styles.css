@@ -242,6 +242,12 @@ button.primary:hover {
   background: #fffdf8;
 }
 
+.template-preview {
+  max-height: 260px;
+  margin-top: 8px;
+  font-size: 12px;
+  background: #fbfbfe;
+}
 .row {
   display: flex;
   gap: 10px;

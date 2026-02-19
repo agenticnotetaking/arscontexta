@@ -92,7 +92,11 @@
           <button id="btnTemplateLoadMerge">Merge Template</button>
           <button id="btnTemplateLoadReplace">Load Template (Replace)</button>
         </div>
+        <div class="row tools">
+          <button id="btnTemplatePreview">Preview Template JSON</button>
+        </div>
         <p id="templateInfo" class="micro"></p>
+        <pre id="templatePreview" class="template-preview"></pre>
       </div>
       <div class="row tools">
         <button id="btnRefreshApprovedCatalogs">Refresh Approved Sets</button>
@@ -104,7 +108,12 @@
         <button id="btnLoadApprovedLibraries">Load Selected Approved Libraries</button>
         <button id="btnLoadApprovedWithLinks">Load Selected Approved + Handoffs</button>
       </div>
+      <div class="row tools">
+        <input id="baselineOutputDir" type="text" value="generated-libraries" placeholder="Output directory (repo-relative)">
+        <button id="btnGenerateFromApproved" class="primary">Generate Baseline from Approved</button>
+      </div>
       <p id="approvedInfo" class="micro"></p>
+      <p id="baselineInfo" class="micro"></p>
       <div id="librariesContainer"></div>
     </section>
 

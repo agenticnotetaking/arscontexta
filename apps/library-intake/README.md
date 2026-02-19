@@ -10,10 +10,11 @@ Standalone intake app for building federated business-function library manifests
 4. Visual mapping mode with draggable library nodes and typed links
 5. In-app help cards with expected input, defaults, and examples per step
 6. Bank Starter preset for fast onboarding
-7. Bank function templates (load or merge) for baseline generation
+7. Bank function templates (load or merge) with preview JSON
 8. JSON export/import (`answers.json`, `manifest.json`)
 9. Revision save/load and approval workflow
 10. Retrieve latest approved libraries and insert handoffs via approved-picker modal
+11. One-click baseline generation from selected approved set
 
 ## Run
 
@@ -58,6 +59,19 @@ API endpoints:
 - `GET /api/templates/bank/:id`
 - `GET /api/approved/catalog`
 - `GET /api/approved/catalog?includeManifest=1`
+- `POST /api/approved/generate-baseline`
+
+## Codex Automation
+
+Generate directly from an approved set:
+
+```bash
+curl -X POST http://localhost:5077/api/approved/generate-baseline \
+  -H "Content-Type: application/json" \
+  -d '{"key":"<program-id>::<revision>","outputDir":"generated-libraries"}'
+```
+
+The response includes `codex_next_steps` to stage/commit/push.
 
 ## Manifest Scaffolding
 
