@@ -1,0 +1,21 @@
+{
+  "id": "information-technology-policy",
+  "display_name": "Information Technology Policy Library",
+  "purpose": "Curate and operationalize policies for Information Technology.",
+  "decisions_supported": [
+    "Assess policy impact for Information Technology",
+    "Prioritize control changes for Information Technology"
+  ],
+  "inputs": [
+    "policy-text",
+    "regulatory-update",
+    "audit-findings"
+  ],
+  "outputs": [
+    "control-requirements",
+    "implementation-guidance",
+    "exceptions-log"
+  ],
+  "owner_role": "policy-owner",
+  "weekly_change_volume": "high"
+}

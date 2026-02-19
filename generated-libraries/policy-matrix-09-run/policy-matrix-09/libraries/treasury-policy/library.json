@@ -1,0 +1,21 @@
+{
+  "id": "treasury-policy",
+  "display_name": "Treasury Policy Library",
+  "purpose": "Curate and operationalize policies for Treasury.",
+  "decisions_supported": [
+    "Assess policy impact for Treasury",
+    "Prioritize control changes for Treasury"
+  ],
+  "inputs": [
+    "policy-text",
+    "regulatory-update",
+    "audit-findings"
+  ],
+  "outputs": [
+    "control-requirements",
+    "implementation-guidance",
+    "exceptions-log"
+  ],
+  "owner_role": "policy-owner",
+  "weekly_change_volume": "medium"
+}

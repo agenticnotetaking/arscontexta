@@ -1,0 +1,27 @@
+﻿{
+    "schema_version":  "1.0",
+    "updated_at":  "2026-02-19T18:41:29.370Z",
+    "programs":  {
+                     "policy-matrix-09":  {
+                                              "latest":  {
+                                                             "program_id":  "policy-matrix-09",
+                                                             "revision":  "rev-0001.json",
+                                                             "approved_at":  "2026-02-19T18:41:29.370Z",
+                                                             "approved_by":  "codex-policy-matrix-bootstrap",
+                                                             "approved_file":  "policy-matrix-09--rev-0001.json",
+                                                             "libraries_count":  6
+                                                         },
+                                              "history":  [
+                                                              {
+                                                                  "program_id":  "policy-matrix-09",
+                                                                  "revision":  "rev-0001.json",
+                                                                  "approved_at":  "2026-02-19T18:41:29.370Z",
+                                                                  "approved_by":  "codex-policy-matrix-bootstrap",
+                                                                  "approved_file":  "policy-matrix-09--rev-0001.json",
+                                                                  "libraries_count":  6
+                                                              }
+                                                          ]
+                                          }
+                 }
+}
+

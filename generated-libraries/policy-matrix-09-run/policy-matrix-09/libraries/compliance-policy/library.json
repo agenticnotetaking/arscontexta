@@ -1,0 +1,21 @@
+{
+  "id": "compliance-policy",
+  "display_name": "Compliance Policy Library",
+  "purpose": "Curate and operationalize policies for Compliance.",
+  "decisions_supported": [
+    "Assess policy impact for Compliance",
+    "Prioritize control changes for Compliance"
+  ],
+  "inputs": [
+    "policy-text",
+    "regulatory-update",
+    "audit-findings"
+  ],
+  "outputs": [
+    "control-requirements",
+    "implementation-guidance",
+    "exceptions-log"
+  ],
+  "owner_role": "policy-owner",
+  "weekly_change_volume": "medium"
+}

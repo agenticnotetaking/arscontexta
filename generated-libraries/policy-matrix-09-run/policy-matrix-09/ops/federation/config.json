@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "mode": "library-federation",
+  "program_id": "policy-matrix-09",
+  "defaults": {
+    "processing_depth": "heavy",
+    "automation": "full",
+    "search": "hybrid",
+    "review_cadence": "monthly",
+    "retention_months": 36
+  },
+  "governance": {
+    "classification_baseline": "confidential",
+    "review_cadence": "monthly",
+    "retention_months": 36,
+    "change_approval": "dual-approver",
+    "required_provenance_fields": [
+      "source_ref",
+      "captured_at",
+      "owner_role",
+      "confidence",
+      "effective_from"
+    ]
+  }
+}
