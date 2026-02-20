@@ -23,7 +23,7 @@ Read these files to understand the methodology and available components. Read th
 **Deferred references (read at specific steps, not upfront):**
 - `${CLAUDE_PLUGIN_ROOT}/reference/use-case-presets.md` -- read in Step 3c (only the matched preset section)
 - `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md` -- read in Step 3d (only if personality signals detected)
-- `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` -- not needed; domain vulnerability matrix is inlined in Step 3f
+- `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` -- read in Step 3f (only HIGH-risk failure mode sections identified by the inlined matrix)
 - `${CLAUDE_PLUGIN_ROOT}/reference/three-spaces.md` -- not needed; folder structure is fully specified in Step 2
 - `${CLAUDE_PLUGIN_ROOT}/reference/conversation-patterns.md` -- consult only if derivation is ambiguous and worked examples would help
 
@@ -443,7 +443,9 @@ Check the derived configuration against the domain vulnerability matrix below. F
 | Productivity Porn | HIGH | medium | low | low | medium | HIGH | low |
 | Temporal Staleness | low | medium | low | low | low | HIGH | low |
 
-Include all HIGH-risk modes in the generated context file. Mention medium-risk modes briefly. Omit low-risk modes. For full failure mode descriptions (prevention patterns, warning signs), consult `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md`.
+Include all HIGH-risk modes in the generated context file. Mention medium-risk modes briefly. Omit low-risk modes.
+
+Read `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` — but only the sections for HIGH-risk failure modes identified above. Use the prevention patterns, warning signs, and domain-specific descriptions to write the "Common Pitfalls" section in domain-native vocabulary. Skip sections for medium and low-risk modes.
 
 ### Step 3g: Full Automation Configuration
 
@@ -736,6 +738,8 @@ Step 9: Write the file.
 
 #### Step 4: self/identity.md
 
+**Re-read `ops/derivation.md`** for personality dimensions, vocabulary mapping, and use case context. If personality is derived (personality.enabled = true), also re-read `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md` for the personality x artifact transformation matrix.
+
 Generate identity.md with personality expressed as natural self-description, not configuration syntax.
 
 If personality is derived (personality.enabled = true), use the personality x artifact transformation matrix from the personality-layer reference. If neutral-helpful (default), write clear, direct, professional self-description.
@@ -855,6 +859,8 @@ The seven content categories for ops/methodology/ are: `derivation-rationale`, `
 ---
 
 #### Step 5g: manual/ (User-Navigable Documentation)
+
+**Re-read `ops/derivation.md`** for vocabulary mapping and domain context.
 
 Generate all 7 manual pages using domain-native vocabulary from the derivation conversation. The manual is self-contained user documentation — pages wiki-link to each other but NOT to notes/.
 
