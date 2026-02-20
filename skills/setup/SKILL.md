@@ -18,12 +18,14 @@ Read these files to understand the methodology and available components. Read th
 **Core references (always read):**
 - `${CLAUDE_PLUGIN_ROOT}/reference/kernel.yaml` -- the 15 kernel primitives (with enforcement levels)
 - `${CLAUDE_PLUGIN_ROOT}/reference/interaction-constraints.md` -- dimension coupling rules, hard/soft constraint checks
-- `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` -- 10 failure modes with domain vulnerability matrix
 - `${CLAUDE_PLUGIN_ROOT}/reference/vocabulary-transforms.md` -- domain-native vocabulary mappings (6 transformation levels)
-- `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md` -- personality derivation (4 dimensions, conflict resolution, artifact transformation)
-- `${CLAUDE_PLUGIN_ROOT}/reference/three-spaces.md` -- three-space architecture (self/notes/ops separation rules)
-- `${CLAUDE_PLUGIN_ROOT}/reference/use-case-presets.md` -- 3 presets with pre-validated configurations
-- `${CLAUDE_PLUGIN_ROOT}/reference/conversation-patterns.md` -- 5 worked examples validating derivation heuristics
+
+**Deferred references (read at specific steps, not upfront):**
+- `${CLAUDE_PLUGIN_ROOT}/reference/use-case-presets.md` -- read in Step 3c (only the matched preset section)
+- `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md` -- read in Step 3d (only if personality signals detected)
+- `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` -- read in Step 3f (only HIGH-risk failure mode sections identified by the inlined matrix)
+- `${CLAUDE_PLUGIN_ROOT}/reference/three-spaces.md` -- not needed; folder structure is fully specified in Step 2
+- `${CLAUDE_PLUGIN_ROOT}/reference/conversation-patterns.md` -- consult only if derivation is ambiguous and worked examples would help
 
 **Generation references (read during Phase 5):**
 - `${CLAUDE_PLUGIN_ROOT}/generators/claude-md.md` -- CLAUDE.md generation template
@@ -329,7 +331,7 @@ Signals that clearly override defaults get applied. Signals that are ambiguous l
 
 ### Step 3b: Cascade Resolution
 
-Once primary dimensions are set, cascade through interaction constraints. Read `${CLAUDE_PLUGIN_ROOT}/reference/interaction-constraints.md` for the full cascade rules.
+Once primary dimensions are set, cascade through interaction constraints (already loaded from upfront reference reads).
 
 Key cascades:
 - Atomic granularity -> pressure toward explicit linking, deep navigation, heavier processing
@@ -340,6 +342,8 @@ Key cascades:
 For cascaded values: confidence = INFERRED (0.2). User signals ALWAYS override cascade pressure.
 
 ### Step 3c: Vocabulary Derivation
+
+Read `${CLAUDE_PLUGIN_ROOT}/reference/use-case-presets.md` — but only the section for the matched preset (or the two closest presets if blending for a novel domain). Skip unmatched preset sections.
 
 Build the complete vocabulary mapping for all 6 transformation levels (see `${CLAUDE_PLUGIN_ROOT}/reference/vocabulary-transforms.md`):
 
@@ -357,7 +361,9 @@ For novel domains (no preset scores above 2.0 affinity):
 
 **Default: neutral-helpful.** Personality is opt-in. The init wizard does NOT ask about personality dimensions unless conversation signals clearly indicate personality preferences.
 
-Map personality signals to four dimensions (see `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md`):
+If personality signals were detected during conversation, read `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md` for the full derivation rules. If no personality signals exist (the common case), skip this read — the default neutral-helpful requires no reference file.
+
+Map personality signals to four dimensions:
 
 | Dimension | Poles | Default |
 |-----------|-------|---------|
@@ -380,7 +386,7 @@ If personality is derived (strong signals exist), set `personality.enabled: true
 
 ### Step 3e: Coherence Validation (Three-Pass Check)
 
-Run BEFORE proceeding to the proposal. Read `${CLAUDE_PLUGIN_ROOT}/reference/interaction-constraints.md`.
+Run BEFORE proceeding to the proposal. Use the interaction constraints already loaded from upfront reference reads.
 
 **Pass 1 -- Hard constraint check:**
 
@@ -420,7 +426,26 @@ Note active compensations in derivation rationale. Flag compensated dimensions f
 
 ### Step 3f: Failure Mode Risk Assessment
 
-Read `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md`. Check the derived configuration against the domain vulnerability matrix. Flag all HIGH-risk failure modes for this configuration. These get included in the generated context file's "Common Pitfalls" section.
+Check the derived configuration against the domain vulnerability matrix below. Flag all HIGH-risk failure modes for this configuration. These get included in the generated context file's "Common Pitfalls" section.
+
+**Domain Vulnerability Matrix:**
+
+| Failure Mode | Research | Learning | Therapy | Relationships | Creative | PM | Companion |
+|-------------|----------|----------|---------|---------------|----------|-----|-----------|
+| Collector's Fallacy | HIGH | HIGH | medium | low | medium | medium | low |
+| Orphan Drift | HIGH | HIGH | medium | low | medium | low | low |
+| Link Rot | medium | medium | low | low | medium | low | low |
+| Schema Erosion | medium | medium | medium | medium | low | medium | low |
+| MOC Sprawl | HIGH | medium | low | low | medium | low | low |
+| Verbatim Risk | HIGH | HIGH | low | low | low | low | low |
+| Cognitive Outsourcing | HIGH | medium | HIGH | low | medium | low | medium |
+| Over-Automation | medium | medium | medium | low | low | medium | low |
+| Productivity Porn | HIGH | medium | low | low | medium | HIGH | low |
+| Temporal Staleness | low | medium | low | low | low | HIGH | low |
+
+Include all HIGH-risk modes in the generated context file. Mention medium-risk modes briefly. Omit low-risk modes.
+
+Read `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` — but only the sections for HIGH-risk failure modes identified above. Use the prevention patterns, warning signs, and domain-specific descriptions to write the "Common Pitfalls" section in domain-native vocabulary. Skip sections for medium and low-risk modes.
 
 ### Step 3g: Full Automation Configuration
 
@@ -713,7 +738,7 @@ Step 9: Write the file.
 
 #### Step 4: self/identity.md
 
-**Re-read `ops/derivation.md`** for personality dimensions, vocabulary mapping, and use case context.
+**Re-read `ops/derivation.md`** for personality dimensions, vocabulary mapping, and use case context. If personality is derived (personality.enabled = true), also re-read `${CLAUDE_PLUGIN_ROOT}/reference/personality-layer.md` for the personality x artifact transformation matrix.
 
 Generate identity.md with personality expressed as natural self-description, not configuration syntax.
 
@@ -749,8 +774,6 @@ Topics:
 
 #### Step 5: self/methodology.md
 
-**Re-read `ops/derivation.md`** for processing level, vocabulary mapping, and domain context.
-
 ```markdown
 ---
 description: How I process, connect, and maintain knowledge
@@ -779,7 +802,7 @@ Topics:
 
 #### Step 5f: ops/methodology/ (Vault Self-Knowledge)
 
-**Re-read `ops/derivation.md`** for all dimension choices, platform tier, automation level, active feature blocks, and coherence validation results. This step creates the vault's self-knowledge folder required by Kernel Primitive 14 (methodology-folder).
+This step creates the vault's self-knowledge folder required by Kernel Primitive 14 (methodology-folder).
 
 **Create `ops/methodology/methodology.md`** (MOC):
 
@@ -996,8 +1019,6 @@ generated_from: "arscontexta-{version}"
 ---
 
 #### Step 6: self/goals.md
-
-**Re-read `ops/derivation.md`** for use case context.
 
 ```markdown
 ---
@@ -1261,42 +1282,36 @@ Apply vocabulary transformation to the template: field labels in comments and ex
 
 ---
 
-#### Step 9: Skills (vocabulary-transformed, full suite)
+#### Step 9: Skills (tiered generation, full suite)
 
 **Re-read `ops/derivation.md`** for processing level, platform, vocabulary mapping, and skills list.
 
 Generate ALL skills for the detected platform. Every vault ships with the complete skill set from day one. Full automation is the default — users opt down, never up.
 
-**Skill source templates live at `${CLAUDE_PLUGIN_ROOT}/skill-sources/`.** Each subdirectory contains a `SKILL.md` template that must be read, vocabulary-transformed, and written to the user's skills directory.
+**Skill source templates live at `${CLAUDE_PLUGIN_ROOT}/skill-sources/`.** Each subdirectory contains a `SKILL.md` template that must be read and written to the user's skills directory.
 
 The 16 skill sources to install:
 
-| Source Directory | Skill Name | Category |
-|-----------------|------------|----------|
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/reduce/` | reduce | Processing |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/reflect/` | reflect | Processing |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/reweave/` | reweave | Processing |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/verify/` | verify | Processing |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/validate/` | validate | Processing |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/seed/` | seed | Orchestration |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/ralph/` | ralph | Orchestration |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/pipeline/` | pipeline | Orchestration |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/tasks/` | tasks | Orchestration |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/stats/` | stats | Navigation |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/graph/` | graph | Navigation |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/next/` | next | Navigation |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/learn/` | learn | Growth |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/remember/` | remember | Growth |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/rethink/` | rethink | Evolution |
-| `${CLAUDE_PLUGIN_ROOT}/skill-sources/refactor/` | refactor | Evolution |
+| Source Directory | Skill Name | Category | Tier |
+|-----------------|------------|----------|------|
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/learn/` | learn | Growth | A |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/tasks/` | tasks | Orchestration | A |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/reflect/` | reflect | Processing | B |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/reweave/` | reweave | Processing | B |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/stats/` | stats | Navigation | B |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/graph/` | graph | Navigation | B |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/refactor/` | refactor | Evolution | B |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/seed/` | seed | Orchestration | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/pipeline/` | pipeline | Orchestration | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/ralph/` | ralph | Orchestration | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/rethink/` | rethink | Evolution | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/next/` | next | Navigation | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/validate/` | validate | Processing | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/remember/` | remember | Growth | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/reduce/` | reduce | Processing | C |
+| `${CLAUDE_PLUGIN_ROOT}/skill-sources/verify/` | verify | Processing | C |
 
-For each skill:
-1. Read `${CLAUDE_PLUGIN_ROOT}/skill-sources/[name]/SKILL.md`
-2. Apply vocabulary transformation — rename and update ALL internal references using the vocabulary mapping from `ops/derivation.md`
-3. Adjust skill metadata (set `context: fork` for fresh context per invocation)
-4. Write the transformed SKILL.md to the user's skills directory
-
-**For Claude Code:** Write to `.claude/skills/[domain-skill-name]/SKILL.md`
+**For Claude Code:** Write each skill to `.claude/skills/[domain-skill-name]/SKILL.md`
 
 **CRITICAL:** Do NOT generate skills from scratch or improvise their content. Read the source template and transform it. The templates contain quality gates, anti-shortcut language, and handoff formats that must be preserved.
 
@@ -1305,6 +1320,62 @@ Every generated skill must include:
 - Quality gates with explicit pass/fail criteria
 - Handoff block format for orchestrated execution
 - Domain-native vocabulary throughout
+
+##### Tiered Generation Protocol
+
+Skills use two placeholder types:
+- `{vocabulary.xxx}` — resolves at **runtime** when the skill reads `ops/derivation-manifest.md`. Do NOT substitute these during setup.
+- `{DOMAIN:xxx}` — literal string templates that must be substituted at **setup time** using the vocabulary mapping.
+
+Process tiers in order: **A → B → C** (simplest first, saving context for skills that need transformation).
+
+##### Tier A — Copy (no placeholders)
+
+**Skills:** learn, tasks
+
+These skill sources contain zero placeholders of either type.
+
+1. Read source `SKILL.md`
+2. Transform frontmatter only:
+   - `name:` → domain-native command name from vocabulary mapping
+   - `description:` → rewrite trigger phrases with domain vocabulary
+   - All other frontmatter fields (`model`, `context`, `allowed-tools`, etc.) → copy verbatim
+3. Copy body verbatim — no scanning, no vocabulary reasoning
+4. Write to skills directory
+
+##### Tier B — Frontmatter only (runtime vocabulary)
+
+**Skills:** reflect, reweave, stats, graph, refactor
+
+These skill sources contain only `{vocabulary.xxx}` patterns in their body. Those patterns resolve at runtime — they are NOT setup-time templates.
+
+1. Read source `SKILL.md`
+2. Transform frontmatter only:
+   - `name:` → domain-native command name from vocabulary mapping
+   - `description:` → rewrite trigger phrases with domain vocabulary
+   - All other frontmatter fields (`model`, `context`, `allowed-tools`, etc.) → copy verbatim
+3. Copy body verbatim — `{vocabulary.xxx}` patterns are **intentionally preserved**
+4. Write to skills directory
+
+**CRITICAL:** Do NOT transform `{vocabulary.xxx}` patterns in the body. These are runtime references, not setup-time templates. If you see `{vocabulary.notes}` in the body, leave it exactly as-is.
+
+##### Tier C — DOMAIN substitution (mechanical string replace)
+
+**Skills:** seed, pipeline, ralph, rethink, next, validate, remember, reduce, verify
+
+These skill sources contain `{DOMAIN:xxx}` patterns that must be literally substituted at setup time. They may also contain `{vocabulary.xxx}` patterns — leave those intact.
+
+1. Read source `SKILL.md`
+2. Transform frontmatter:
+   - `name:` → domain-native command name from vocabulary mapping
+   - `description:` → rewrite trigger phrases with domain vocabulary
+   - All other frontmatter fields (`model`, `context`, `allowed-tools`, etc.) → copy verbatim
+3. Build DOMAIN substitution map from the vocabulary mapping in `ops/derivation.md` (e.g., `{DOMAIN:reduce}` → `/distill`, `{DOMAIN:notes}` → `claims`, `{DOMAIN:topic map}` → `MOC`)
+4. Mechanical string replace: substitute every `{DOMAIN:xxx}` → literal value in the body
+5. Do NOT touch `{vocabulary.xxx}` patterns — leave them for runtime resolution
+6. Write to skills directory
+
+**Verification:** After writing each Tier C skill, confirm zero `{DOMAIN:` strings remain in the output file. If any remain, the substitution map is incomplete — check `ops/derivation.md` vocabulary mapping for the missing entry.
 
 ##### Skill Discoverability Protocol
 
@@ -1421,8 +1492,6 @@ Generate all four hook scripts: session-orient.sh, session-capture.sh, validate-
 ---
 
 #### Step 11: Hub MOC
-
-**Re-read `ops/derivation.md`** for vocabulary mapping and use case context.
 
 Create the vault entry point at `[domain:notes]/index.md`:
 
