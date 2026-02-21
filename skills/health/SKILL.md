@@ -407,7 +407,8 @@ for f in {vocabulary.notes}/*.md; do
   basename=$(basename "$f" .md)
 
   # Last modified (days ago)
-  mod_days=$(( ($(date +%s) - $(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null)) / 86400 ))
+  # Linux stat -f means filesystem stats (not file), so try -c first
+  mod_days=$(( ($(date +%s) - $(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)) / 86400 ))
 
   # Incoming link count
   incoming=$(rg -l "\[\[$basename\]\]" --glob '*.md' | grep -v "$f" | wc -l | tr -d ' ')

@@ -139,13 +139,25 @@ fi
 
 # Methodology staleness check (Rule Zero)
 if [ -d ops/methodology ] && [ -f ops/config.yaml ]; then
-  CONFIG_MTIME=$(stat -f %m ops/config.yaml 2>/dev/null || stat -c %Y ops/config.yaml 2>/dev/null || echo 0)
+  # Detect platform for stat syntax: Linux uses -c %Y, macOS uses -f %m.
+  # Must try Linux first — on Linux, stat -f means "filesystem stats" and
+  # succeeds with wrong output instead of failing, breaking the || fallback.
+  if stat -c %Y ops/config.yaml &>/dev/null 2>&1; then
+    _STAT_FMT() { stat -c %Y "$1" 2>/dev/null || echo 0; }
+  elif stat -f %m ops/config.yaml &>/dev/null 2>&1; then
+    _STAT_FMT() { stat -f %m "$1" 2>/dev/null || echo 0; }
+  else
+    _STAT_FMT() { echo 0; }
+  fi
+
+  CONFIG_MTIME=$(_STAT_FMT ops/config.yaml)
   NEWEST_METH=$(ls -t ops/methodology/*.md 2>/dev/null | head -1)
   if [ -n "$NEWEST_METH" ]; then
-    METH_MTIME=$(stat -f %m "$NEWEST_METH" 2>/dev/null || stat -c %Y "$NEWEST_METH" 2>/dev/null || echo 0)
+    METH_MTIME=$(_STAT_FMT "$NEWEST_METH")
     DAYS_STALE=$(( (CONFIG_MTIME - METH_MTIME) / 86400 ))
     if [ "$DAYS_STALE" -ge 30 ]; then
       echo "CONDITION: Methodology notes are ${DAYS_STALE}+ days behind config changes. Consider /rethink drift."
     fi
   fi
+  unset -f _STAT_FMT
 fi
