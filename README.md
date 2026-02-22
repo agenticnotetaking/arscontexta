@@ -267,6 +267,8 @@ Keep qmd MCP configuration and tool preapproval in `.mcp.json`.
 
 ## Project Structure
 
+Current repository layout (abridged):
+
 ```
 arscontexta/
 |-- .claude-plugin/
@@ -301,12 +303,18 @@ arscontexta/
 |-- reference/                   # Core reference documents
 |   |-- kernel.yaml              # 15 kernel primitives
 |   |-- three-spaces.md          # Architecture spec
-|   +-- use-case-presets.md      # Pre-validated configs
+|   |-- use-case-presets.md      # Pre-validated configs
+|   |-- templates/               # Note templates
+|   +-- test-fixtures/           # Validation fixtures
 |-- platforms/                   # Platform-specific adapters
-|   |-- claude-code/
-|   +-- shared/
+|   |-- claude-code/             # Claude Code adapters + hook templates
+|   +-- shared/                  # Shared templates, feature docs, skill blocks
 |-- presets/                     # Pre-validated configurations
+|   |-- personal/
+|   |-- research/
+|   +-- experimental/
 |-- scripts/                     # Utility scripts
+|-- agents/                      # Agent-facing guidance
 +-- README.md
 ```
 
