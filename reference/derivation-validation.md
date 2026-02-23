@@ -265,7 +265,7 @@ _schema:
 
 ## Test 5: Minimal Platform (Convention-Only)
 
-**Question:** Can all 15 kernel primitives be satisfied on a platform with no hooks, no skills, and no subagent support — using only a context file and filesystem access?
+**Question:** Can all 16 kernel primitives be satisfied on a platform with no hooks, no skills, and no subagent support — using only a context file and filesystem access?
 
 **Input:**
 - Use case: Personal journal — regular reflections, goal tracking, occasional pattern review
@@ -646,4 +646,4 @@ Observe (create observation/tension)
 
 7. **Feature disabling is safe and reversible.** The progressive configuration test (Test 8) confirms that disabling optional features does not break the system. Each optional feature has a fallback path. INVARIANT primitives cannot be disabled, ensuring the structural foundation is always present. The system ships complete and users opt down — the reverse of the former tier-based approach.
 
-**Derivation engine confidence: HIGH.** The 15 kernel primitives provide a universal base. The 8 configuration dimensions parameterize the variation space. Interaction constraints prevent incoherent combinations. The 3 presets (Research, Personal Assistant, Experimental) provide pre-validated starting points. The system derives working configurations for research, therapy, competitive gaming, multi-domain composition, minimal platforms, constraint recovery, vocabulary-verified domains, progressive configuration, and self-improving operational loops.
+**Derivation engine confidence: HIGH.** The 16 kernel primitives provide a universal base. The 8 configuration dimensions parameterize the variation space. Interaction constraints prevent incoherent combinations. The 3 presets (Research, Personal Assistant, Experimental) provide pre-validated starting points. The system derives working configurations for research, therapy, competitive gaming, multi-domain composition, minimal platforms, constraint recovery, vocabulary-verified domains, progressive configuration, and self-improving operational loops.

@@ -139,7 +139,7 @@ These produce friction but can work with compensating mechanisms:
 
 ### Kernel Primitive Constraints
 
-These constraints apply to the 15 kernel primitives and their INVARIANT/CONFIGURABLE status:
+These constraints apply to the 16 kernel primitives and their INVARIANT/CONFIGURABLE status:
 
 **INVARIANT primitives (always present, cannot be disabled):**
 

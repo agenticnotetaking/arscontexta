@@ -5,7 +5,7 @@
 A Claude Code plugin that generates complete knowledge systems from conversation.
 You describe how you think and work. The engine derives a cognitive architecture
 -- folder structure, context files, processing pipeline, hooks, navigation maps,
-and note templates -- tailored to your domain and backed by 249 research claims.
+and note templates -- tailored to your domain and backed by 244 research claims.
 
 No templates. No configuration. Just conversation.
 
@@ -74,7 +74,7 @@ domain needs and why.
 | **Derivation** | Maps signals to eight configuration dimensions with confidence scoring |
 | **Proposal** | Shows what will be generated and why, in your vocabulary |
 | **Generation** | Produces all files: context file, folders, templates, skills, hooks, manual |
-| **Validation** | Checks all 15 kernel primitives, runs pipeline smoke test |
+| **Validation** | Checks all 16 kernel primitives, runs pipeline smoke test |
 
 The whole process takes about 20 minutes. It's token-intensive because the engine
 reads research claims, reasons about your domain, and generates substantial output.
@@ -180,13 +180,13 @@ Four hooks automate quality enforcement:
 | **Session Orient** | `SessionStart` | Injects workspace tree, loads identity, surfaces maintenance signals |
 | **Write Validate** | `PostToolUse` (Write) | Schema enforcement on every note write |
 | **Auto Commit** | `PostToolUse` (Write, async) | Git auto-commit, non-blocking |
-| **Session Capture** | `Stop` | Persists session state to `ops/sessions/` |
+| **Session Capture** | `Stop` | Persists session state to `ops/sessions/` (generated during `/setup`) |
 
 ---
 
 ## The Research Graph
 
-The `methodology/` directory contains **249 interconnected research claims**
+The `methodology/` directory contains **244 interconnected research claims**
 about tools for thought, knowledge management, and agent-native cognitive
 architecture. These claims back every configuration decision.
 
@@ -297,9 +297,9 @@ arscontexta/
 |-- generators/
 |   |-- claude-md.md             # CLAUDE.md template
 |   +-- features/                # 17 composable feature blocks
-|-- methodology/                 # 249 research claims
+|-- methodology/                 # 244 research claims
 |-- reference/                   # Core reference documents
-|   |-- kernel.yaml              # 15 kernel primitives
+|   |-- kernel.yaml              # 16 kernel primitives
 |   |-- three-spaces.md          # Architecture spec
 |   +-- use-case-presets.md      # Pre-validated configs
 |-- platforms/                   # Platform-specific adapters

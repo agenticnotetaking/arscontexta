@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # sync-thinking.sh
-# Syncs the research graph from the vault into the bundled thinking/ directory.
+# Syncs the research graph from the vault into the bundled methodology/ directory.
 # Tracks added/removed/changed files and records the vault's git hash.
 #
 # Usage:
@@ -15,9 +15,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 VAULT_PATH="${VAULT_PATH:?Set VAULT_PATH to the vault root directory}"
-SOURCE_DIR="$VAULT_PATH/01_thinking"
-DEST_DIR="$PROJECT_ROOT/thinking"
-HASH_FILE="$PROJECT_ROOT/thinking/.vault-sync-hash"
+SOURCE_DIR="$VAULT_PATH/methodology"
+DEST_DIR="$PROJECT_ROOT/methodology"
+HASH_FILE="$PROJECT_ROOT/methodology/.vault-sync-hash"
 DRY_RUN=false
 
 if [[ "${1:-}" == "--dry-run" ]]; then

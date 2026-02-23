@@ -1,6 +1,6 @@
 {
   "name": "knowledge-setup",
-  "description": "Scaffold a complete knowledge system. Detects platform, conducts conversation, derives configuration, generates everything. Validates against 15 kernel primitives.",
+  "description": "Scaffold a complete knowledge system. Detects platform, conducts conversation, derives configuration, generates everything. Validates against 16 kernel primitives.",
   "version": "0.4.0",
   "author": "arscontexta",
   "tags": [
