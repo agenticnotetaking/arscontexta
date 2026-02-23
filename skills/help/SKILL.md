@@ -137,7 +137,7 @@ Your system also learns from experience:
   /remember             Capture when something goes wrong
                         (your system remembers corrections)
   /ask [question]       Ask about [domain] -- answers draw
-                        from 249 methodology notes AND your
+                        from 244 methodology notes AND your
                         system's own methodology notes
 
 Type /help anytime for guidance.
@@ -312,7 +312,7 @@ Related:
 **Special case for /help ask:** Expand the "What it does" section to mention both knowledge layers:
 ```
 What it does:
-  Queries the bundled methodology knowledge base (249
+  Queries the bundled methodology knowledge base (244
   research claims) AND your local methodology notes
   in ops/methodology/. Answers are grounded in
   specific claims and applied to your system's

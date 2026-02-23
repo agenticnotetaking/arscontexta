@@ -1,8 +1,8 @@
 ---
 name: setup
-description: Scaffold a complete knowledge system. Detects platform, conducts conversation, derives configuration, generates everything. Validates against 15 kernel primitives. Triggers on "/setup", "/setup --advanced", "set up my knowledge system", "create my vault".
+description: Scaffold a complete knowledge system. Detects platform, conducts conversation, derives configuration, generates everything. Validates against 16 kernel primitives. Triggers on "/setup", "/setup --advanced", "set up my knowledge system", "create my vault".
 context: fork
-model: sonnet
+model: opus
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 argument-hint: "[--advanced for upfront dimension configuration]"
 ---
@@ -16,7 +16,7 @@ The difference is derivation: understanding WHO this person is, WHAT they need, 
 Read these files to understand the methodology and available components. Read them BEFORE starting any phase.
 
 **Core references (always read):**
-- `${CLAUDE_PLUGIN_ROOT}/reference/kernel.yaml` -- the 15 kernel primitives (with enforcement levels)
+- `${CLAUDE_PLUGIN_ROOT}/reference/kernel.yaml` -- the 16 kernel primitives (with enforcement levels)
 - `${CLAUDE_PLUGIN_ROOT}/reference/interaction-constraints.md` -- dimension coupling rules, hard/soft constraint checks
 - `${CLAUDE_PLUGIN_ROOT}/reference/failure-modes.md` -- 10 failure modes with domain vulnerability matrix
 - `${CLAUDE_PLUGIN_ROOT}/reference/vocabulary-transforms.md` -- domain-native vocabulary mappings (6 transformation levels)
@@ -450,7 +450,7 @@ Structure the proposal as:
 2. Folder structure with their domain-named directories
 3. How their notes work -- with a specific example from their domain using their vocabulary
 4. How processing works, described in their words
-5. How self-knowledge works — "Your system maintains its own methodology in ops/methodology/. Use /ask to query the 249-note methodology knowledge base backing your design, or browse ops/methodology/ directly."
+5. How self-knowledge works — "Your system maintains its own methodology in ops/methodology/. Use /ask to query the 244-note methodology knowledge base backing your design, or browse ops/methodology/ directly."
 6. Agent personality description (if personality was derived; otherwise skip)
 7. What was intentionally excluded and why
 8. Any high-risk failure modes flagged

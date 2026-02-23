@@ -209,7 +209,7 @@ Using `${CLAUDE_PLUGIN_ROOT}/reference/three-spaces.md`, verify the re-derived a
 
 ### Pass 5: Kernel validation (15 primitives)
 
-Using `${CLAUDE_PLUGIN_ROOT}/reference/derivation-validation.md`, verify the re-derived system will pass all 15 kernel primitives.
+Using `${CLAUDE_PLUGIN_ROOT}/reference/derivation-validation.md`, verify the re-derived system will pass all 16 kernel primitives.
 
 ---
 

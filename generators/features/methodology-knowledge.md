@@ -51,7 +51,7 @@ cat ops/methodology/derivation-rationale.md
 
 ### The Research Foundation
 
-Your system's design choices are backed by a knowledge base of 249 interconnected methodology notes — research claims, guidance documents, and domain examples — covering knowledge systems, cognitive science, and agent cognition. Access it through:
+Your system's design choices are backed by a knowledge base of 244 interconnected methodology notes — research claims, guidance documents, and domain examples — covering knowledge systems, cognitive science, and agent cognition. Access it through:
 
 ```
 /ask "why does my system use atomic notes?"
@@ -61,7 +61,7 @@ Your system's design choices are backed by a knowledge base of 249 interconnecte
 
 The /ask command consults two knowledge layers:
 - **Local methodology** (ops/methodology/) — "How does MY system work?" questions
-- **Research graph** (249 bundled methodology notes) — "Why is this a good idea in general?" questions
+- **Research graph** (244 bundled methodology notes) — "Why is this a good idea in general?" questions
 
 When you need to understand a design choice: check ops/methodology/ for the specific rationale, then /ask for the theoretical backing.
 ```

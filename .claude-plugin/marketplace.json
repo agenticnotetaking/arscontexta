@@ -12,7 +12,7 @@
   "plugins": [
     {
       "name": "arscontexta",
-      "description": "Generate research-backed knowledge systems from natural conversation. 15 kernel primitives, 26 commands, 249 research claims, 3 presets.",
+      "description": "Generate research-backed knowledge systems from natural conversation. 16 kernel primitives, 26 commands, 244 research claims, 3 presets.",
       "version": "0.8.0",
       "source": "./",
       "strict": false,
