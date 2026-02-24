@@ -39,6 +39,23 @@ if [ -n "$SESSION_ID" ] && [ "$(bash "$READ_CONFIG" "session_capture" "true")" =
       # Different session — promote previous to timestamped archive
       ARCHIVE_TS="${PREV_STARTED:-$TIMESTAMP}"
       mv ops/sessions/current.json "ops/sessions/${ARCHIVE_TS}.json"
+
+      # Export previous session JSONL to markdown (background — non-blocking)
+      SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+      PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+      ENCODED_PATH=$(echo "$PROJECT_DIR" | sed 's|/|-|g')
+      JSONL_FILE="$HOME/.claude/projects/${ENCODED_PATH}/${PREV_ID}.jsonl"
+
+      if [ -f "$JSONL_FILE" ] && command -v python3 &>/dev/null; then
+        (
+          python3 "$SCRIPT_DIR/jsonl-to-md.py" "$JSONL_FILE" "ops/sessions/${ARCHIVE_TS}.md" "$PROJECT_DIR" 2>/dev/null \
+          && python3 -c "
+import json
+p = 'ops/sessions/${ARCHIVE_TS}.json'
+d = json.load(open(p)); d['exported'] = True; json.dump(d, open(p, 'w'), indent=2)
+" 2>/dev/null
+        ) &
+      fi
     fi
   fi
 
