@@ -5,6 +5,8 @@
 # Returns: value for key, or default if key/file missing.
 # Default default: "true" (preserves existing behaviour when no config exists).
 #
+# Supported keys: git, session_capture, disable_plugin_hooks
+#
 # Migration: old marker files (cat face text) have no YAML keys,
 # so grep returns nothing → defaults apply → behaviour unchanged.
 

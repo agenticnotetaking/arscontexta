@@ -21,6 +21,11 @@ git: true
 session_capture: true
 EOF
   fi
+  # Check if plugin hooks are disabled
+  DISABLE_PLUGIN_HOOKS=$("$(dirname "$0")/read_config.sh" disable_plugin_hooks false)
+  if [ "$DISABLE_PLUGIN_HOOKS" = "true" ]; then
+    exit 1
+  fi
   exit 0
 fi
 
@@ -34,6 +39,11 @@ if [ -f ops/config.yaml ] || [ -f .claude/hooks/session-orient.sh ]; then
 git: true
 session_capture: true
 EOF
+  # Check if plugin hooks are disabled
+  DISABLE_PLUGIN_HOOKS=$("$(dirname "$0")/read_config.sh" disable_plugin_hooks false)
+  if [ "$DISABLE_PLUGIN_HOOKS" = "true" ]; then
+    exit 1
+  fi
   exit 0
 fi
 
