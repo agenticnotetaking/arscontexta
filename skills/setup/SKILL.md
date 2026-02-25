@@ -1531,8 +1531,9 @@ session_capture: true
 Keys and defaults:
 - `git: true` — auto-commit on writes (auto-commit.sh)
 - `session_capture: true` — session JSON capture on start (session-orient.sh)
+- `disable_plugin_hooks: false` — set to `true` to disable all plugin hooks (use when project-local hooks cover everything)
 
-Omitted keys default to `true`, so a minimal marker file (or even an empty file) preserves full default behaviour.
+Omitted keys default to `false` for `disable_plugin_hooks` and `true` for all others, so a minimal marker file (or even an empty file) preserves full default behaviour.
 
 ---
 
